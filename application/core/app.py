@@ -1,0 +1,95 @@
+import customtkinter as ctk
+import numpy as np
+
+from application.core.events import EventBus, Event
+from application.core.utility.mask import Mask
+
+from application.core.windows.main_window import MainWindow
+from application.core.windows.project_window import ProjectWindow
+from application.core.windows.splash_window import SplashWindow
+
+from application.core.services.nodes import NodeCanvas
+from application.core.services.nodes_catalog import NodeCatalog
+from application.core.services.status import StatusBar
+from application.core.services.menu import TopMenu
+from application.core.services.ordered import Atlas, Combiner
+from application.core.services.slm import SLM
+from application.core.services.camera import Camera
+
+
+class App:
+    def __init__(self):
+        self.event_bus = EventBus()
+
+        ### Windows
+        self.main_window = MainWindow()
+        self.event_bus.add_service(self.main_window)
+
+        self.project_window = ProjectWindow()
+        self.event_bus.add_service(self.project_window)
+
+        self.splash_window = SplashWindow()
+        self.event_bus.add_service(self.splash_window)
+
+        ### On main
+
+        self.nodes = NodeCanvas(self.main_window)
+        self.nodes.grid(row=0, column=0, rowspan=2, columnspan=4, padx=5, pady=5)
+
+        self.event_bus.add_service(self.nodes)
+
+        self.menu = TopMenu(self.main_window)
+        self.event_bus.add_service(self.menu)
+
+        self.main_window.config(menu=self.menu.menu)
+
+        self.down_notebook = ctk.CTkTabview(self.main_window, anchor='w', height=150)
+        self.down_notebook.grid(row=2, column=0, columnspan=3, sticky='ew', pady=5)
+
+        self.down_notebook.add('Ноды')
+        self.down_notebook.add('Атлас')
+        self.down_notebook.add('Сумматор')
+
+        self.nodes_catalog = NodeCatalog(self.down_notebook.tab('Ноды'))
+        self.nodes_catalog.grid()
+        self.event_bus.add_service(self.nodes_catalog)
+
+        self.atlas = Atlas(self.down_notebook.tab('Атлас'))
+        self.atlas.grid()
+        self.event_bus.add_service(self.atlas)
+
+        self.combiner = Combiner(self.down_notebook.tab('Сумматор'))
+        self.combiner.grid()
+        self.event_bus.add_service(self.combiner)
+
+        self.right_notebook = ctk.CTkTabview(self.main_window, anchor='w', width=365)
+        self.right_notebook.grid(row=0, column=4, columnspan=1, rowspan=2, sticky='nsew', pady=5, padx=5)
+
+        self.right_notebook.add('Камера')
+        self.right_notebook.add('Ловушки')
+        self.right_notebook.add('Цернике')
+        self.right_notebook.add('Вихри')
+        self.right_notebook.add('Другое')
+
+        self.camera = Camera(self.right_notebook.tab('Камера'))
+        self.right_notebook.tab('Камера').grid_columnconfigure([0], weight=1)
+        self.camera.grid(sticky='ew', row=0, column=0)
+        self.event_bus.add_service(self.camera)
+
+        self.down_right = ctk.CTkFrame(self.main_window)
+        self.down_right.grid(row=2, column=3, columnspan=2, rowspan=1, sticky='nsew', pady=5, padx=5)
+
+        self.slm = SLM(self.down_right)
+        self.slm.grid(sticky='nsew')
+        self.event_bus.add_service(self.slm)
+
+        self.status = StatusBar(self.main_window)
+        self.status.grid(row=3, column=0, columnspan=5, sticky='ew')
+
+        self.event_bus.add_service(self.status)
+
+    def run(self):
+        #self.event_bus.raise_event(
+            #Event('Add Combiner', {'text': '', 'mask': Mask(np.random.uniform(0, 6, (1200, 1920)))}))
+        #self.event_bus.raise_event(Event('Add Combiner', {'text': '', 'mask': Mask(np.zeros((1200, 1920)))}))
+        self.main_window.mainloop()
