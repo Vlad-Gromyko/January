@@ -1,15 +1,18 @@
 import os
 
 import numpy as np
+from PIL import Image
 
 import configparser
 import customtkinter as ctk
+import tkinter.filedialog as fd
 
 from application.core.events import Service, Event
 
 from application.core.utility.mask import Mask
 from application.widgets.maskwidget import MaskLabel
 
+from tkinterdnd2 import TkinterDnD, DND_ALL
 
 class Atlas(Service, ctk.CTkFrame):
     def __init__(self, master):
@@ -19,10 +22,13 @@ class Atlas(Service, ctk.CTkFrame):
 
         self.cages = []
 
+
+
+
         self.left_frame = ctk.CTkFrame(self)
         self.left_frame.grid(row=0, column=0, padx=5, pady=5)
 
-        self.add_button = ctk.CTkButton(self.left_frame, text='\uFF0B')
+        self.add_button = ctk.CTkButton(self.left_frame, text='\uFF0B', command=self.load_file)
         self.add_button.grid(row=0, column=0, padx=5, pady=5)
         self.add_button.cget("font").configure(size=100)
 
@@ -34,6 +40,47 @@ class Atlas(Service, ctk.CTkFrame):
 
         self.events_reactions['Add Atlas'] = lambda event: self.add_cage(event.get_value()['mask'],
                                                                          event.get_value()['text'])
+
+        self.drop_target_register(DND_ALL)
+        self.dnd_bind("<<Drop>>", self.to_drop)
+
+    def to_drop(self, event):
+        dropped_file = event.data.replace("{", "").replace("}", "")
+        file = dropped_file.split('/')[-1]
+        mode = file.split('.')[-1]
+        if mode == 'npy':
+            array = np.load(dropped_file)
+            self.add_cage(Mask(array), file)
+        if mode == 'bmp':
+            array = np.asarray(Image.open(dropped_file))/255 * 2 * np.pi
+            self.add_cage(Mask(array), file)
+        self.drop_end()
+
+    def drop_start(self):
+        self.fg_color=self.cget('fg_color')
+
+        self.configure(fg_color='#32CD32')
+
+    def drop_end(self):
+        self.configure(fg_color=self.fg_color)
+
+    def load_file(self):
+        files = fd.askopenfilenames(title="Загрузить голограмму", defaultextension=".bmp",
+                                    filetypes=[('Numpy', '*.npy'), ('BitMap', '*.bmp*')],)
+
+        if files != '':
+            for file in files:
+                if file.split('.')[-1] == 'npy':
+                    array = np.load(file)
+                    self.add_cage(Mask(array), text=file.split('/')[-1], trigger=False)
+
+                if file.split('.')[-1] == 'bmp':
+                    array = np.asarray(Image.open(file))/255 * 2 * np.pi
+                    self.add_cage(Mask(array), text=file.split('/')[-1], trigger=False)
+
+            self.event_bus.raise_event(Event(self.name + ' Changed', self.cages))
+
+
 
     def add_cage(self, mask: Mask, text, trigger=True):
         counter = len(self.cages)
@@ -155,7 +202,7 @@ class Cage(ctk.CTkFrame):
         self.right_button = ctk.CTkButton(frame_buttons, text='\u2BC8', width=20)
         self.right_button.grid(row=0, column=2, padx=2)
 
-        self.cross_button = ctk.CTkButton(frame_buttons, text='\u2573', width=20)
+        self.cross_button = ctk.CTkButton(frame_buttons, text='\u2573', width=20, fg_color='#c94f4f')
         self.cross_button.grid(row=0, column=3, padx=2)
 
         self.mask = MaskLabel(self, mask, size_scale=1 / 10)
@@ -244,6 +291,10 @@ class Combiner(Atlas):
 
     def clean(self):
         super().clean()
+        self.sum_masks()
+
+    def cross(self, counter):
+        super().cross(counter)
         self.sum_masks()
 
     def sum_masks(self):

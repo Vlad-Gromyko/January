@@ -8,13 +8,15 @@ from application.core.windows.main_window import MainWindow
 from application.core.windows.project_window import ProjectWindow
 from application.core.windows.splash_window import SplashWindow
 
-from application.core.services.nodes import NodeCanvas
+from application.core.services.nodes import NodeEditor
 from application.core.services.nodes_catalog import NodeCatalog
 from application.core.services.status import StatusBar
 from application.core.services.menu import TopMenu
 from application.core.services.ordered import Atlas, Combiner
 from application.core.services.slm import SLM
 from application.core.services.camera import Camera
+from application.core.services.zernike import Zernike
+from application.core.services.traps import Traps
 
 
 class App:
@@ -33,10 +35,11 @@ class App:
 
         ### On main
 
-        self.nodes = NodeCanvas(self.main_window)
+        self.nodes = NodeEditor(self.main_window)
         self.nodes.grid(row=0, column=0, rowspan=2, columnspan=4, padx=5, pady=5)
-
         self.event_bus.add_service(self.nodes)
+
+
 
         self.menu = TopMenu(self.main_window)
         self.event_bus.add_service(self.menu)
@@ -54,6 +57,7 @@ class App:
         self.nodes_catalog.grid()
         self.event_bus.add_service(self.nodes_catalog)
 
+
         self.atlas = Atlas(self.down_notebook.tab('Атлас'))
         self.atlas.grid()
         self.event_bus.add_service(self.atlas)
@@ -68,13 +72,21 @@ class App:
         self.right_notebook.add('Камера')
         self.right_notebook.add('Ловушки')
         self.right_notebook.add('Цернике')
-        self.right_notebook.add('Вихри')
-        self.right_notebook.add('Другое')
+        self.right_notebook.add('Моды')
 
         self.camera = Camera(self.right_notebook.tab('Камера'))
         self.right_notebook.tab('Камера').grid_columnconfigure([0], weight=1)
         self.camera.grid(sticky='ew', row=0, column=0)
         self.event_bus.add_service(self.camera)
+
+        self.traps = Traps(self.right_notebook.tab('Ловушки'))
+        self.traps.grid(sticky='ew', row=0, column=0)
+        self.event_bus.add_service(self.traps)
+
+        self.zernike = Zernike(self.right_notebook.tab('Цернике'))
+        self.right_notebook.tab('Цернике').grid_columnconfigure([0], weight=1)
+        self.zernike.grid(sticky='ew', row=0, column=0)
+        self.event_bus.add_service(self.zernike)
 
         self.down_right = ctk.CTkFrame(self.main_window)
         self.down_right.grid(row=2, column=3, columnspan=2, rowspan=1, sticky='nsew', pady=5, padx=5)
@@ -89,7 +101,4 @@ class App:
         self.event_bus.add_service(self.status)
 
     def run(self):
-        #self.event_bus.raise_event(
-            #Event('Add Combiner', {'text': '', 'mask': Mask(np.random.uniform(0, 6, (1200, 1920)))}))
-        #self.event_bus.raise_event(Event('Add Combiner', {'text': '', 'mask': Mask(np.zeros((1200, 1920)))}))
         self.main_window.mainloop()

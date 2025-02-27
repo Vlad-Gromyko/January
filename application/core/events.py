@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 from application.widgets.maskwidget import MaskLabel
 
+from tkinterdnd2 import TkinterDnD, DND_ALL
+
 
 class Event:
     def __init__(self, name: str, value=None):
@@ -15,7 +17,7 @@ class Event:
         return self._name
 
 
-class Service(ABC):
+class Service(ABC, TkinterDnD.DnDWrapper):
     def __init__(self):
         self.event_bus = None
         self.events_reactions = {}
@@ -23,8 +25,19 @@ class Service(ABC):
 
         self.saved_state = False
 
-        self.events_reactions['Load'] = lambda event: self.set_project(event.get_value())
+        self.fg_color = None
 
+        self.events_reactions['Load'] = lambda event: self.set_project(event.get_value())
+        self.events_reactions['Drop Start'] = lambda event: self.drop_start()
+        self.events_reactions['Drop End'] = lambda event: self.drop_end()
+
+        self.fields = {}
+
+    def drop_start(self):
+        pass
+
+    def drop_end(self):
+        pass
 
     def set_project(self, path):
         pass
@@ -37,35 +50,34 @@ class Service(ABC):
             self.events_reactions[event.get_name()](event)
 
 
-
 class EventBus:
     def __init__(self):
-        self.services = {}
-
+        self.services = []
 
     def start(self):
-        for service_name in self.services.keys():
-            self.services[service_name].start_service()
+        for service_name in self.services:
+            service_name.start_service()
 
     def open_project(self, new_project):
-        for service_name in self.services.keys():
-            self.services[service_name].open_project(new_project)
+        for service_name in self.services:
+            service_name.open_project(new_project)
 
     def add_service(self, service: Service):
-        self.services[service.name] = service
+        self.services.append(service)
         service.event_bus = self
 
     def get_field(self, name: str):
+        print(name)
         answer = None
-        if name in self.services.keys():
-            answer = self.services[name]
+        for service_name in self.services:
+            if name in service_name.fields.keys():
+                answer = service_name.fields[name]
 
         return answer
-
 
     def raise_event(self, event: Event):
         print(event.get_name())
         answer = []
-        for service_name in self.services.keys():
-            answer.append(self.services[service_name].raise_event(event))
+        for service_name in self.services:
+            answer.append(service_name.raise_event(event))
         return all(answer)

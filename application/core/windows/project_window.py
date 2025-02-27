@@ -1,7 +1,8 @@
 import customtkinter as ctk
 from application.core.events import Service, Event
 
-
+import numpy as np
+from application.core.utility.mask import Mask
 import time
 
 
@@ -26,7 +27,11 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
 
         self.event_bus.raise_event(Event('Project Loaded'))
-        self.event_bus.raise_event(Event('Take Shot'))
+
+        ar = np.zeros((1200, 1920))
+
+        self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
+        #self.event_bus.raise_event(Event('Take Shot'))
 
 
 

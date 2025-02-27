@@ -37,17 +37,4 @@ class Mask:
         return Mask(new_array)
 
 
-class MaskSaver:
-    def __init__(self, mask_name, folder_path):
-        self.mask_name = mask_name
-        self.folder_path = folder_path
-
-    def save_as_image(self, mask: Mask, file_format):
-        array = np.asarray(mask.get_array() / 2 / np.pi * 255, dtype='uint8')
-        image = Image.fromarray(array)
-        image.save(self.folder_path + '/' + self.mask_name + file_format)
-
-    def save_as_np(self, mask: Mask):
-        array = mask.get_array()
-        np.save(self.folder_path + '/' + self.mask_name + '.npy', array)
 
