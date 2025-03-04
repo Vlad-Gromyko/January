@@ -1,8 +1,6 @@
 import customtkinter as ctk
-import numpy as np
 
-from application.core.events import EventBus, Event
-from application.core.utility.mask import Mask
+from application.core.events import EventBus
 
 from application.core.windows.main_window import MainWindow
 from application.core.windows.project_window import ProjectWindow
@@ -36,7 +34,7 @@ class App:
         ### On main
 
         self.nodes = NodeEditor(self.main_window)
-        self.nodes.grid(row=0, column=0, rowspan=2, columnspan=4, padx=5, pady=5)
+        self.nodes.grid(row=0, column=0, rowspan=2, columnspan=4)
         self.event_bus.add_service(self.nodes)
 
 
@@ -47,7 +45,8 @@ class App:
         self.main_window.config(menu=self.menu.menu)
 
         self.down_notebook = ctk.CTkTabview(self.main_window, anchor='w', height=150)
-        self.down_notebook.grid(row=2, column=0, columnspan=3, sticky='ew', pady=5)
+        self.down_notebook.grid(row=2, column=0, columnspan=3, sticky='ew')
+
 
         self.down_notebook.add('Ноды')
         self.down_notebook.add('Атлас')
@@ -67,7 +66,7 @@ class App:
         self.event_bus.add_service(self.combiner)
 
         self.right_notebook = ctk.CTkTabview(self.main_window, anchor='w', width=365)
-        self.right_notebook.grid(row=0, column=4, columnspan=1, rowspan=2, sticky='nsew', pady=5, padx=5)
+        self.right_notebook.grid(row=0, column=4, columnspan=1, rowspan=2, sticky='nsew', pady=5)
 
         self.right_notebook.add('Камера')
         self.right_notebook.add('Ловушки')

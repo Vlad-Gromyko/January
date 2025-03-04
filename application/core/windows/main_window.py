@@ -3,6 +3,7 @@ from application.core.events import Service, Event
 
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
+
 class MainWindow(Service, ctk.CTk):
     def __init__(self, *args, **kwargs):
         Service.__init__(self)
@@ -15,7 +16,7 @@ class MainWindow(Service, ctk.CTk):
         self.dnd_bind("<<DropLeave>>", self.drop_fall)
 
         self.title('Hyperion')
-        #self.geometry('1680x1050')
+        self.geometry('1680x1050')
         self.iconify()
 
         self.events_reactions['Project Loaded'] = lambda event: self.deiconify()

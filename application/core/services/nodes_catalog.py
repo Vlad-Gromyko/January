@@ -16,7 +16,7 @@ class NodeCatalog(Service, ctk.CTkFrame):
         ctk.CTkFrame.__init__(self, master)
         self.name = 'NodeCatalog'
 
-        self.scroll = ctk.CTkScrollableFrame(self, width=1145, height=150, orientation='horizontal')
+        self.scroll = ctk.CTkScrollableFrame(self, width=1120, height=150, orientation='horizontal')
         self.scroll.grid(padx=5, pady=5)
 
         self.events_reactions['Register Node'] = lambda event: self.register_node(event.get_value())

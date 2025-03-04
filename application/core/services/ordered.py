@@ -35,7 +35,7 @@ class Atlas(Service, ctk.CTkFrame):
         self.clean_button = ctk.CTkButton(self.left_frame, text='Очистить', command=self.clean)
         self.clean_button.grid(row=1, column=0, padx=5, pady=5)
 
-        self.scroll = ctk.CTkScrollableFrame(self, orientation='horizontal', width=985, height=150)
+        self.scroll = ctk.CTkScrollableFrame(self, orientation='horizontal', width=960, height=150)
         self.scroll.grid(row=0, column=1, padx=5, pady=5)
 
         self.events_reactions['Add Atlas'] = lambda event: self.add_cage(event.get_value()['mask'],
@@ -175,7 +175,7 @@ class Atlas(Service, ctk.CTkFrame):
         slm_width = int(config[slm_name]['WIDTH'])
         slm_height = int(config[slm_name]['HEIGHT'])
 
-        acc_folder = path + '/accumulator'
+        acc_folder = path + '/atlas'
 
         holos = os.listdir(acc_folder)
 
@@ -243,7 +243,7 @@ class Combiner(Atlas):
                                                 Event('Set SLM Original',
                                                       self.compose_label.get_mask())))
 
-        self.scroll.configure(width=735)
+        self.scroll.configure(width=710)
         self.scroll.grid(row=0, column=2, padx=5, pady=5)
 
         self.events_reactions.pop('Add Atlas', None)

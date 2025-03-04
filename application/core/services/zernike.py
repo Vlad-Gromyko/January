@@ -29,11 +29,11 @@ class Zernike(Service, ctk.CTkFrame):
 
         ctk.CTkLabel(self.notebook.tab('Маски'), text='Последняя Вычисленная Маска').grid(row=0, column=0, sticky='ew',
                                                                                           pady=5)
-        self.auto_total_label = MaskLabel(self.notebook.tab('Маски'), size_scale=1 / 5.7)
+        self.auto_total_label = MaskLabel(self.notebook.tab('Маски'), size_scale=1 / 7)
         self.auto_total_label.grid(row=1, column=0, pady=5)
 
         ctk.CTkLabel(self.notebook.tab('Маски'), text='Введенная маска').grid(row=2, column=0, sticky='ew', pady=5)
-        self.hand_total_label = MaskLabel(self.notebook.tab('Маски'), size_scale=1 / 5.7)
+        self.hand_total_label = MaskLabel(self.notebook.tab('Маски'), size_scale=1 / 7)
         self.hand_total_label.grid(row=3, column=0, pady=5)
 
         self.notebook.add('Ввод')
