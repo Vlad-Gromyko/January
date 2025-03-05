@@ -25,16 +25,12 @@ class NodeCatalog(Service, ctk.CTkFrame):
         self.canvases = []
 
     def set_project(self, path):
-        path = 'application/core/services/nodes'
+        path = 'application/core/services/nodes_types'
         self.register_nodes_in_folder(path)
 
     def register_node(self, node):
         canvas = ctk.CTkCanvas(self.scroll, bg='#333333', width=500, height=500)
         canvas.grid(row=0, column=len(self.canvases), padx=5)
-
-        node_to_draw = node(canvas, 300, 200)
-        canvas.create_window(200, 100, window=node_to_draw)
-        line = canvas.create_line(0, 0, 300, 300)
 
         self.nodes.append(node)
         self.canvases.append(canvas)
