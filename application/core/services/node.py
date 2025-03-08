@@ -35,6 +35,7 @@ class IMove:
     def move_end(self, event):
         self.moving = False
 
+
 class Enter(IMove):
     def __init__(self, canvas, node, x, y, name, color='#FFF'):
         super().__init__(canvas, x, y, )
@@ -85,7 +86,7 @@ class Out(IMove):
     def __init__(self, canvas, node, x, y, name, color='#FFF'):
         super().__init__(canvas, x, y, )
         self.name = name
-        self.color =color
+        self.color = color
         self.node = node
 
         self.outer_oval_ID = self.canvas.create_oval(x, y, x + 15, y + 15, fill='#FFF')
@@ -167,7 +168,6 @@ class INode(IMove):
         self.add_out('O', '#1445CC')
         self.add_out('IYooo', '#00AA00')
 
-
         self.redraw_label()
 
         self.functions_inputs = {}
@@ -182,7 +182,6 @@ class INode(IMove):
         self.functions_inputs[name] = value
         if None not in self.functions_inputs.values():
             self.execute()
-
 
     def execute(self):
         self.command()
@@ -226,7 +225,8 @@ class INode(IMove):
 
         self.label.configure(width=self.max_width_out + self.max_width_enter + 30)
 
-        self.label_ID = self.canvas.create_window(self.x, self.y, window=self.label, anchor=ctk.NW)
+        self.label_ID = self.canvas.create_window(self.x, self.y, window=self.label, anchor=ctk.NW,
+                                                  width=self.max_width_out + self.max_width_enter + 30)
 
         self.canvas.delete(self.frame_ID)
 
