@@ -1,186 +1,169 @@
-import tkinter as tk
-from ctypes import windll
-from tkinter import simpledialog
-from tkinter.font import names
-
 import customtkinter as ctk
+import tkinter
+from tkinter.simpledialog import askstring
+from tkinter.messagebox import showwarning
 
 from application.core.events import Service, Event
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
-from abc import ABC, abstractmethod
+import os
+
+from abc import abstractmethod
 
 
-class IMove:
-    def __init__(self, canvas, x, y):
+class CanvasElement:
+    def __init__(self, editor, canvas, x, y):
+        self.name = 'CanvasElement'
+
+        self.editor = editor
         self.canvas = canvas
 
         self.x = x
         self.y = y
-        self.ID = None
+
+        self.tag = None
 
         self.moving = False
 
-    def move_start(self, event):
-        self.moving = True
+    def bbox(self, tag):
+        bounds = self.canvas.bbox(tag)
+        return bounds
 
-    def move(self, event):
-        if self.moving:
-            dx = event.x
-            dy = event.y
+    def center(self, tag):
+        bounds = self.canvas.bbox(tag)
+        x = (bounds[2] + bounds[0]) // 2
+        y = (bounds[3] + bounds[1]) // 2
 
-            self.x += dx
-            self.y += dy
-
-    def move_end(self, event):
-        self.moving = False
+        return x, y
 
 
-class Enter(IMove):
-    def __init__(self, canvas, node, x, y, name, color='#FFF'):
-        super().__init__(canvas, x, y, )
-        self.name = name
-        self.color = color
+class Socket(CanvasElement):
+    def __init__(self, editor, canvas, node, x, y, text, color, enter=True):
+        super().__init__(editor, canvas, x, y)
+
+        self.enter = enter
+        self.name = text
         self.node = node
+        self.text = text
+        self.color = color
 
-        self.outer_oval_ID = self.canvas.create_oval(x, y, x + 15, y + 15, fill='#FFF')
-        self.oval_ID = self.canvas.create_oval(x + 3, y + 3, x + 12, y + 12, fill=color)
-        self.canvas.itemconfigure(self.outer_oval_ID, state='hidden')
+        flag_anchor = ctk.NW if enter else ctk.NE
 
-        self.canvas.tag_bind(self.oval_ID, '<Enter>', self.on_enter)
-        self.canvas.tag_bind(self.oval_ID, '<Leave>', self.on_leave)
+        x_oval = x if enter else x - 15
+        x_text = x + 15 if enter else x - 15
 
-        self.text_ID = self.canvas.create_text(x + 17, y, text=name, fill=color, anchor=ctk.NW)
+        self.oval_ID = self.canvas.create_oval(x_oval, y, x_oval + 15, y + 15, fill=self.color)
+        self.text_ID = self.canvas.create_text(x_text, y, anchor=flag_anchor, text='  ' + text + '  ', fill=color,
+                                               font='Arial 14'
+                                               )
 
         bounds = self.canvas.bbox(self.text_ID)
         self.width = bounds[2] - bounds[0] + 15
-        self.height = bounds[3] - bounds[1]
+        self.height = bounds[3] - bounds[1] + 2
 
         self.wire = None
 
-    def on_enter(self, event):
-        self.canvas.itemconfigure(self.outer_oval_ID, state='normal')
+        if self.enter:
+            editor.socket_enter_IDs.append(self.oval_ID)
 
-    def on_leave(self, event):
-        self.canvas.itemconfigure(self.outer_oval_ID, state='hidden')
+            editor.socket_enter_to_node_IDs[self.oval_ID] = node
+        else:
+            editor.socket_output_IDs.append(self.oval_ID)
 
-    def move(self, event):
-        super().move(event)
-        if self.moving:
-            self.canvas.move(self.oval_ID, event.x, event.y)
-            self.canvas.move(self.outer_oval_ID, event.x, event.y)
-            self.canvas.move(self.text_ID, event.x, event.y)
-            if self.wire:
-                self.wire.draw()
+            editor.socket_output_to_node_IDs[self.oval_ID] = node
 
-    def forced_move(self, x, y):
-        self.canvas.move(self.oval_ID, x, y)
-        self.canvas.move(self.outer_oval_ID, x, y)
-        self.canvas.move(self.text_ID, x, y)
-
-    def collect_value(self, value):
-        self.node.add_value(self.name, value)
-
-
-class Out(IMove):
-    def __init__(self, canvas, node, x, y, name, color='#FFF'):
-        super().__init__(canvas, x, y, )
-        self.name = name
-        self.color = color
-        self.node = node
-
-        self.outer_oval_ID = self.canvas.create_oval(x, y, x + 15, y + 15, fill='#FFF')
-        self.oval_ID = self.canvas.create_oval(x + 3, y + 3, x + 12, y + 12, fill=color)
-        self.canvas.itemconfigure(self.outer_oval_ID, state='hidden')
-
-        self.canvas.tag_bind(self.oval_ID, '<Enter>', self.on_enter)
-        self.canvas.tag_bind(self.oval_ID, '<Leave>', self.on_leave)
-
-        self.text_ID = self.canvas.create_text(x, y, text=name, fill=color, anchor=ctk.NE)
-
-        bounds = self.canvas.bbox(self.text_ID)
-        self.width = bounds[2] - bounds[0] + 15
-        self.height = bounds[3] - bounds[1]
-
-        self.wire = None
-
-    def on_enter(self, event):
-        self.canvas.itemconfigure(self.outer_oval_ID, state='normal')
-
-    def on_leave(self, event):
-        self.canvas.itemconfigure(self.outer_oval_ID, state='hidden')
-
-    def move(self, event):
-        super().move(event)
-        if self.moving:
-            self.canvas.move(self.oval_ID, event.x, event.y)
-            self.canvas.move(self.outer_oval_ID, event.x, event.y)
-            self.canvas.move(self.text_ID, event.x, event.y)
-            if self.wire:
-                self.wire.draw()
+    def coords(self, x, y):
+        self.x = x
+        self.y = y
+        self.canvas.move(self.oval_ID, x, y, )
+        self.canvas.move(self.text_ID, x, y, )
 
     def forced_move(self, x, y):
+
         self.x += x
         self.y += y
-        self.canvas.move(self.oval_ID, x, y)
-        self.canvas.move(self.outer_oval_ID, x, y)
-        self.canvas.move(self.text_ID, x, y)
+        self.canvas.move(self.oval_ID, x, y, )
+        self.canvas.move(self.text_ID, x, y, )
+
+        if self.wire:
+            self.wire.draw()
+
+    def new_wire(self, wire):
+        if self.wire:
+            self.wire.shut_wire(0)
+        self.wire = wire
+
+    def kick_value(self, value):
+        self.node.kick_value(self.name, value)
 
 
-class INode(IMove):
-    def __init__(self, canvas, x, y, name='Yoooo MAn', color='#0000AA'):
-        super().__init__(canvas, x, y)
+class INode(CanvasElement):
+    def __init__(self, editor, canvas, x, y, text='Node', color_text='#FFF', color_back='#000'):
+        super().__init__(editor, canvas, x, y)
 
-        self.frame_ID = self.canvas.create_rectangle(x, y, x + 300, y + 300, fill='#000')
+        self.func = None
+        self.func_enters = dict()
 
-        self.label = ctk.CTkLabel(canvas, text=name, fg_color=color, anchor='w')
+        self.text = text
 
-        self.label_ID = self.canvas.create_window(x, y, window=self.label, anchor=ctk.NW)
+        self.color_text = color_text
+        self.color_back = color_back
 
-        bounds = self.canvas.bbox(self.label_ID)  # returns a tuple like (x1, y1, x2, y2)
-        self.label_width = bounds[2] - bounds[0]
-        self.label_height = bounds[3] - bounds[1]
+        self.label = ctk.CTkLabel(canvas, text=text, text_color=color_text, fg_color=color_back, anchor=ctk.NW)
 
-        self.label.bind('<Button-1>', self.move_start)
+        self.frame_IDs = dict()
+
+        self.frame_IDs['label'] = self.canvas.create_window(x, y, anchor=ctk.NW, window=self.label)
+
+        bounds = self.canvas.bbox(self.frame_IDs['label'])
+
+        self.height = bounds[3] - bounds[1] + 2
+
+        self.frame_IDs['back'] = None
+
+        self.frame_IDs['tools'] = None
+
+        self.enter_sockets = {}
+        self.output_sockets = {}
+
+        self.enter_sockets_ovals = {}
+        self.output_sockets_ovals = {}
+
+        self.label.bind('<Button-1>', self.start_move)
         self.label.bind('<Motion>', self.move)
-        self.label.bind('<ButtonRelease>', self.move_end)
+        self.label.bind('<ButtonRelease>', self.end_move)
 
-        self.enters = {}
-        self.outs = {}
+        self.enter_height = 0
+        self.output_height = 0
 
-        self.max_width_enter = 0
-        self.max_width_out = 0
+        self.enter_width = 0
+        self.output_width = 0
 
-        self.total_height_enter = 0
-        self.total_height_out = 0
+        self.SIGNAL = '#FFF'
+        self.NUM = '#00A9F3'
+        self.STR = '#96e441'
+        self.BOOL = '#7D0A0A'
 
-        self.enters_ovals = []
-        self.outs_ovals = []
+        self.apply_signal()
 
-        self.wiring = False
+        self.add_enter_socket('Condition', self.BOOL)
+        self.add_enter_socket('Str', self.STR)
+        self.add_enter_socket('Num', self.NUM)
 
-        self.add_enter('Input 1', '#00AA00')
-        self.add_enter('Input 11111111111111111111', '#0000AA')
+        self.move_outputs()
 
-        self.add_out('4', '#BB00AA')
-        self.add_out('Out 11111111111111111111', '#0045CC')
-        self.add_out('Out', '#0000AA')
-        self.add_out('O', '#1445CC')
-        self.add_out('IYooo', '#00AA00')
+    def apply_signal(self):
+        self.add_enter_socket('\u23F5', self.SIGNAL)
+        self.add_output_socket('\u23F5', self.SIGNAL)
 
-        self.redraw_label()
+    def kick_value(self, name, value):
+        self.func_enters[name] = value
+        self.check_for_execute()
 
-        self.functions_inputs = {}
-        for item in self.enters.keys():
-            self.functions_inputs[item] = None
+    def check_for_execute(self):
+        res = all(self.func_enters.values())
 
-        self.functions_outputs = {}
-        for item in self.outs.keys():
-            self.functions_outputs[item] = None
-
-    def add_value(self, name, value):
-        self.functions_inputs[name] = value
-        if None not in self.functions_inputs.values():
+        if res:
             self.execute()
 
     def execute(self):
@@ -189,83 +172,81 @@ class INode(IMove):
     def command(self):
         pass
 
-    def add_enter(self, name, color='#FFF'):
-        if name not in self.enters.keys():
-            y = self.y + self.label_height
-            for item in self.enters.values():
-                y += item.height + 2
+    def max_height(self):
+        return max(self.enter_height, self.output_height) + self.height
 
-            enter = Enter(self.canvas, self, self.x, y, name, color)
+    def add_enter_socket(self, name, color):
+        if name not in self.enter_sockets.keys():
+            enter = Socket(self.editor, self.canvas, self, self.x, self.y + self.enter_height + self.height, name,
+                           color, enter=True)
+            self.enter_height += enter.height
+            self.enter_width = max(self.enter_width, enter.width)
+            self.enter_sockets[name] = enter
+            self.enter_sockets_ovals[enter.oval_ID] = enter
+            self.func_enters[name] = None
 
-            self.enters[name] = enter
+    def add_output_socket(self, name, color):
+        if name not in self.output_sockets.keys():
+            output = Socket(self.editor, self.canvas, self, self.x, self.y + self.output_height + self.height, name,
+                            color,
+                            enter=False)
+            self.output_height += output.height
+            self.output_width = max(self.output_width, output.width)
+            self.output_sockets[name] = output
+            self.output_sockets_ovals[output.oval_ID] = output
 
-            self.max_width_enter = max(self.max_width_enter, enter.width)
+    def move_outputs(self):
+        for value in self.output_sockets.values():
+            value.forced_move(self.enter_width + self.output_width + 30, 0)
 
-            self.total_height_enter += enter.height + 2
+        width = max(self.enter_width + self.output_width + 30, 100)
 
-            self.enters_ovals.append(enter.oval_ID)
+        self.canvas.delete(self.frame_IDs['label'])
+        self.frame_IDs['label'] = self.canvas.create_window(self.x, self.y, anchor=ctk.NW, window=self.label,
+                                                            width=width)
 
-    def add_out(self, name, color='#FFF'):
-        if name not in self.outs.keys():
-            y = self.y + self.label_height
-            for item in self.outs.values():
-                y += item.height + 2
+        if self.frame_IDs['back']:
+            self.canvas.delete(self.frame_IDs['back'])
+        self.frame_IDs['back'] = self.canvas.create_rectangle(self.x, self.y,
+                                                              self.x + width,
+                                                              self.y + max(self.output_height,
+                                                                           self.enter_height) + self.height,
+                                                              fill='#000')
 
-            out = Out(self.canvas, self, self.x, y, name, color)
+        self.canvas.tag_lower(self.frame_IDs['back'])
 
-            self.outs[name] = out
+    def start_move(self, event):
+        self.moving = True
 
-            self.max_width_out = max(self.max_width_out, out.width)
-            self.outs_ovals.append(out.oval_ID)
-
-            self.total_height_out += out.height + 2
-
-    def redraw_label(self):
-        self.canvas.delete(self.label_ID)
-
-        self.label.configure(width=self.max_width_out + self.max_width_enter + 30)
-
-        self.label_ID = self.canvas.create_window(self.x, self.y, window=self.label, anchor=ctk.NW,
-                                                  width=self.max_width_out + self.max_width_enter + 30)
-
-        self.canvas.delete(self.frame_ID)
-
-        self.frame_ID = self.canvas.create_rectangle(self.x, self.y,
-                                                     self.x + self.max_width_out + self.max_width_enter + 30,
-                                                     self.y + max(self.total_height_out,
-                                                                  self.total_height_enter) + self.label_height,
-                                                     fill='#000')
-
-        self.canvas.tag_lower(self.frame_ID)
-
-        for item in self.outs.values():
-            item.forced_move(self.max_width_out + self.max_width_enter + 15, 0)
-
-    def move_start(self, event):
-        super().move_start(event)
-        for item in self.enters.values():
-            item.move_start(event)
-
-        for item in self.outs.values():
-            item.move_start(event)
-
-    def move_end(self, event):
-        super().move_end(event)
-        for item in self.enters.values():
-            item.move_end(event)
-
-        for item in self.outs.values():
-            item.move_end(event)
+    def end_move(self, event):
+        self.moving = False
 
     def move(self, event):
-        super().move(event)
-
-        for item in self.enters.values():
-            item.move(event)
-
-        for item in self.outs.values():
-            item.move(event)
-
         if self.moving:
-            self.canvas.move(self.label_ID, event.x, event.y)
-            self.canvas.move(self.frame_ID, event.x, event.y)
+            self.x += event.x
+            self.y += event.y
+
+            for value in self.frame_IDs.values():
+                if value:
+                    self.canvas.move(value, event.x, event.y)
+
+            for value in self.enter_sockets.values():
+                value.forced_move(event.x, event.y)
+
+            for value in self.output_sockets.values():
+                value.forced_move(event.x, event.y)
+
+    def forced_move(self, x, y,):
+        if self.moving:
+            self.x += x
+            self.y += y
+
+            for value in self.frame_IDs.values():
+                if value:
+                    self.canvas.move(value, x, y)
+
+            for value in self.enter_sockets.values():
+                value.forced_move(x, y)
+
+            for value in self.output_sockets.values():
+                value.forced_move(x, y)
