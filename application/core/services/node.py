@@ -3,12 +3,16 @@ import tkinter
 from tkinter.simpledialog import askstring
 from tkinter.messagebox import showwarning
 
+from application.core.windows.code_window import CodeShow
+
 from application.core.events import Service, Event
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
 import os
 
 from abc import abstractmethod
+
+import inspect
 
 
 class CanvasElement:
@@ -41,6 +45,8 @@ class Socket(CanvasElement):
     def __init__(self, editor, canvas, node, x, y, text, color, enter=True):
         super().__init__(editor, canvas, x, y)
 
+        self._value_to_hold = None
+
         self.enter = enter
         self.name = text
         self.node = node
@@ -53,7 +59,7 @@ class Socket(CanvasElement):
         x_text = x + 15 if enter else x - 15
 
         self.oval_ID = self.canvas.create_oval(x_oval, y, x_oval + 15, y + 15, fill=self.color)
-        self.text_ID = self.canvas.create_text(x_text, y, anchor=flag_anchor, text='  ' + text + '  ', fill=color,
+        self.text_ID = self.canvas.create_text(x_text, y, anchor=flag_anchor, text='  ' + text + '  ', fill='#FFF',
                                                font='Arial 14'
                                                )
 
@@ -71,6 +77,28 @@ class Socket(CanvasElement):
             editor.socket_output_IDs.append(self.oval_ID)
 
             editor.socket_output_to_node_IDs[self.oval_ID] = node
+
+    def get_value(self):
+        if self.wire:
+            return self._value_to_hold
+        return None
+
+    def set_value(self, value):
+        self._value_to_hold = value
+
+        if self.wire and not self.enter:
+            self.wire.kick_value(self._value_to_hold)
+
+
+        if self.wire and self.enter:
+
+            self.node.try_execute()
+
+    def delete_socket(self):
+        self.canvas.delete(self.oval_ID)
+        self.canvas.delete(self.text_ID)
+        if self.wire:
+            self.wire.shut_wire()
 
     def coords(self, x, y):
         self.x = x
@@ -93,23 +121,21 @@ class Socket(CanvasElement):
             self.wire.shut_wire(0)
         self.wire = wire
 
-    def kick_value(self, value):
-        self.node.kick_value(self.name, value)
 
+class INode(CanvasElement, Service):
+    def __init__(self, editor, canvas, palette, x, y, text='Node', color_text='#FFF', color_back='#000'):
+        CanvasElement.__init__(self, editor, canvas, x, y)
+        Service.__init__(self)
 
-class INode(CanvasElement):
-    def __init__(self, editor, canvas, x, y, text='Node', color_text='#FFF', color_back='#000'):
-        super().__init__(editor, canvas, x, y)
-
-        self.func = None
-        self.func_enters = dict()
+        self.palette = palette
 
         self.text = text
 
         self.color_text = color_text
         self.color_back = color_back
 
-        self.label = ctk.CTkLabel(canvas, text=text, text_color=color_text, fg_color=color_back, anchor=ctk.NW)
+        my_font = ctk.CTkFont(family="<Arial>", size=14, weight='bold')
+        self.label = ctk.CTkLabel(canvas, text=text, text_color=color_text, fg_color=color_back, font=my_font)
 
         self.frame_IDs = dict()
 
@@ -118,10 +144,9 @@ class INode(CanvasElement):
         bounds = self.canvas.bbox(self.frame_IDs['label'])
 
         self.height = bounds[3] - bounds[1] + 2
+        self.width = bounds[2] - bounds[0] + 2
 
         self.frame_IDs['back'] = None
-
-        self.frame_IDs['tools'] = None
 
         self.enter_sockets = {}
         self.output_sockets = {}
@@ -133,61 +158,92 @@ class INode(CanvasElement):
         self.label.bind('<Motion>', self.move)
         self.label.bind('<ButtonRelease>', self.end_move)
 
+        self.menu = tkinter.Menu(self.canvas, tearoff=0)
+        self.label.bind('<Button-3>', self.right_click)
+
         self.enter_height = 0
         self.output_height = 0
 
         self.enter_width = 0
         self.output_width = 0
 
-        self.SIGNAL = '#FFF'
-        self.NUM = '#00A9F3'
-        self.STR = '#96e441'
-        self.BOOL = '#7D0A0A'
+    def get_func_inputs(self):
+        func_inputs = dict()
 
-        self.apply_signal()
+        for item in self.enter_sockets.keys():
+            func_inputs[item] = self.enter_sockets[item].get_value()
 
-        self.add_enter_socket('Condition', self.BOOL)
-        self.add_enter_socket('Str', self.STR)
-        self.add_enter_socket('Num', self.NUM)
+        return func_inputs
 
-        self.move_outputs()
+    def try_execute(self):
+        go = True
 
-    def apply_signal(self):
-        self.add_enter_socket('\u23F5', self.SIGNAL)
-        self.add_output_socket('\u23F5', self.SIGNAL)
+        for item in self.enter_sockets.values():
 
-    def kick_value(self, name, value):
-        self.func_enters[name] = value
-        self.check_for_execute()
+            if item.get_value() is  None:
+                go = False
 
-    def check_for_execute(self):
-        res = all(self.func_enters.values())
-
-        if res:
+        if go:
             self.execute()
 
     def execute(self):
-        self.command()
-
-    def command(self):
         pass
+
+    def add_clone(self):
+        self.event_bus.raise_event(Event('Canvas Add Node', self.__class__))
+
+    def show_info(self):
+        pass
+
+    def show_code(self):
+        CodeShow(self.text, inspect.getsource(self.execute))
+
+    def delete_node(self):
+
+        for socket in self.enter_sockets.values():
+            socket.delete_socket()
+
+        for socket in self.output_sockets.values():
+            socket.delete_socket()
+
+        self.editor.nodes.remove(self)
+
+        for item in self.frame_IDs.values():
+            if item:
+                self.canvas.delete(item)
+
+    def right_click(self, event):
+        self.menu.post(event.x_root, event.y_root)
+
+    def add_menu(self):
+        self.menu.add_command(label='Информация    \u003F', command=self.show_info)
+        self.menu.add_command(label='Дублировать    +', command=self.add_clone)
+        self.menu.add_command(label='Показать Код', command=self.show_code)
+        self.menu.add_separator()
+        self.menu.add_command(label='Удалить        \u2573', command=self.delete_node)
+
+    def run(self):
+        self.move_outputs()
+
+        self.add_menu()
 
     def max_height(self):
         return max(self.enter_height, self.output_height) + self.height
 
-    def add_enter_socket(self, name, color):
+    def add_enter_socket(self, name, color, dx=0, dy=0):
         if name not in self.enter_sockets.keys():
-            enter = Socket(self.editor, self.canvas, self, self.x, self.y + self.enter_height + self.height, name,
+            enter = Socket(self.editor, self.canvas, self, self.x + dx, self.y + self.enter_height + self.height + dy,
+                           name,
                            color, enter=True)
             self.enter_height += enter.height
             self.enter_width = max(self.enter_width, enter.width)
             self.enter_sockets[name] = enter
             self.enter_sockets_ovals[enter.oval_ID] = enter
-            self.func_enters[name] = None
 
-    def add_output_socket(self, name, color):
+    def add_output_socket(self, name, color, dx=0, dy=0):
         if name not in self.output_sockets.keys():
-            output = Socket(self.editor, self.canvas, self, self.x, self.y + self.output_height + self.height, name,
+            output = Socket(self.editor, self.canvas, self, self.x + dx, self.y + self.output_height + self.height + dy,
+                            name,
                             color,
                             enter=False)
             self.output_height += output.height
@@ -196,10 +252,10 @@ class INode(CanvasElement):
             self.output_sockets_ovals[output.oval_ID] = output
 
     def move_outputs(self):
-        for value in self.output_sockets.values():
-            value.forced_move(self.enter_width + self.output_width + 30, 0)
+        width = max(100, self.enter_width + self.output_width + 30)
 
-        width = max(self.enter_width + self.output_width + 30, 100)
+        for value in self.output_sockets.values():
+            value.forced_move(width, 0)
 
         self.canvas.delete(self.frame_IDs['label'])
         self.frame_IDs['label'] = self.canvas.create_window(self.x, self.y, anchor=ctk.NW, window=self.label,
@@ -236,7 +292,7 @@ class INode(CanvasElement):
             for value in self.output_sockets.values():
                 value.forced_move(event.x, event.y)
 
-    def forced_move(self, x, y,):
+    def forced_move(self, x, y, ):
         if self.moving:
             self.x += x
             self.y += y

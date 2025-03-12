@@ -3,6 +3,10 @@ from application.core.events import Service, Event
 
 import numpy as np
 from application.core.utility.mask import Mask
+from application.core.services.node import INode
+from application.core.services.special_nodes.start import Start
+from application.core.services.special_nodes.reactive import Parameter, NumNode
+
 import time
 
 
@@ -31,6 +35,9 @@ class ProjectWindow(Service, ctk.CTkToplevel):
         ar = np.zeros((1200, 1920))
 
         self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
+        self.event_bus.raise_event(Event('Canvas Add Node', value=INode))
+        self.event_bus.raise_event(Event('Canvas Add Node', value=Parameter))
+        self.event_bus.raise_event(Event('Canvas Add Node', value=NumNode))
         #self.event_bus.raise_event(Event('Take Shot'))
 
 

@@ -29,11 +29,11 @@ class NodeCatalog(Service, ctk.CTkFrame):
         self.register_nodes_in_folder(path)
 
     def register_node(self, node):
-        canvas = ctk.CTkCanvas(self.scroll, bg='#333333', width=500, height=500)
-        canvas.grid(row=0, column=len(self.canvases), padx=5)
-
         self.nodes.append(node)
-        self.canvases.append(canvas)
+
+        self.event_bus.raise_event(Event('Canvas Add Node', value=node))
+
+
 
     def register_nodes_in_folder(self, dir_path):
         files = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]

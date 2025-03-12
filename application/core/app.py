@@ -68,6 +68,7 @@ class App:
         self.right_notebook = ctk.CTkTabview(self.main_window, anchor='w', width=365)
         self.right_notebook.grid(row=0, column=4, columnspan=1, rowspan=2, sticky='nsew', pady=5)
 
+        self.right_notebook.add('Инспектор Сущностей')
         self.right_notebook.add('Камера')
         self.right_notebook.add('Ловушки')
         self.right_notebook.add('Цернике')
