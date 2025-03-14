@@ -157,9 +157,9 @@ class INode(CanvasElement, Service):
         self.enter_sockets_ovals = {}
         self.output_sockets_ovals = {}
 
-        #self.label.bind('<Button-1>', self.start_move)
-        #self.label.bind('<Motion>', self.move)
-        #self.label.bind('<ButtonRelease>', self.end_move)
+        self.label.bind('<Button-1>', self.start_move_rect)
+        self.label.bind('<Motion>', self.move_rect)
+        self.label.bind('<ButtonRelease>', self.end_move_rect)
 
         self.menu = tkinter.Menu(self.canvas, tearoff=0)
         self.label.bind('<Button-3>', self.right_click)
@@ -171,6 +171,14 @@ class INode(CanvasElement, Service):
         self.output_width = 0
 
         self.chosen_one = False
+
+    def choose(self):
+        self.chosen_one = True
+        self.label.configure(fg_color='#4682B4')
+
+    def no_choose(self):
+        self.chosen_one = False
+        self.label.configure(fg_color='#000000')
 
     def get_func_inputs(self):
         func_inputs = dict()
@@ -292,6 +300,23 @@ class INode(CanvasElement, Service):
 
     def start_move(self, event):
         self.moving = True
+
+    def start_move_rect(self, event):
+        self.choose()
+        for node in self.editor.nodes:
+            if node.chosen_one:
+                node.start_move(event)
+
+    def move_rect(self, event):
+        for node in self.editor.nodes:
+            if node.chosen_one:
+                node.move(event)
+
+    def end_move_rect(self, event):
+        for node in self.editor.nodes:
+            if node.chosen_one:
+                node.end_move(event)
+        self.no_choose()
 
     def end_move(self, event):
         self.moving = False

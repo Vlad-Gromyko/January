@@ -35,3 +35,11 @@ class Start(INode):
         self.output_sockets[''].set_value(True)
         self.output_sockets[''].set_value(None)
 
+    def choose(self):
+        self.chosen_one = True
+        self.label.configure(fg_color='#4682B4')
+
+    def no_choose(self):
+        self.chosen_one = False
+        self.label.configure(fg_color='#FFF')
+

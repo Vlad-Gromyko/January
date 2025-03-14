@@ -340,6 +340,8 @@ class CanvasTab(Service, ctk.CTkFrame):
 
     def start_move(self, event):
         tag = self.canvas.find_closest(event.x, event.y)[0]
+        for node in self.nodes:
+            node.no_choose()
 
         if tag in self.socket_enter_IDs or tag in self.socket_output_IDs:
             self.first_socket = tag
@@ -395,10 +397,12 @@ class CanvasTab(Service, ctk.CTkFrame):
             self.canvas.tag_lower(self.rect_ID)
 
             for node in self.nodes:
+                node.no_choose()
                 if  min(event.x, self.rect_x) <= node.x <= max(event.x, self.rect_x):
                     if min(event.y, self.rect_y) <= node.y <= max(event.y, self.rect_y):
                         self.rect_list.append(node)
-                        node.start_move(event)
+                        node.choose()
+
 
     def draw_wire(self, x, y):
         if self.wire_line:
