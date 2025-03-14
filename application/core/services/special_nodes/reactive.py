@@ -17,11 +17,10 @@ from application.core.services.node import INode
 
 
 class Parameter(INode):
-    def __init__(self, editor, canvas, palette, x, y, text='Parameter', color_text='#FFF', color_back='#000',
-                 type_color='BOOL'):
-        super().__init__(editor, canvas, palette, x, y, text=text, color_text=color_text, color_back=color_back)
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
 
-        color = self.palette[type_color]
+        color = self.palette[kwargs['type_color']]
         self.add_enter_socket('', color, -16, -self.height + 7)
 
         self.add_output_socket('', color, self.width + 13, -self.height + 7)
@@ -39,8 +38,8 @@ class Parameter(INode):
 
 
 class NumNode(INode):
-    def __init__(self, editor, canvas, palette, x, y, text='Число', color_text='#FFF', color_back='#191970'):
-        super().__init__(editor, canvas, palette, x, y, text=text, color_text=color_text, color_back=color_back)
+    def __init__(self, config, editor, canvas, palette, x, y, text='Число', theme='program', **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
 
         self.add_output_socket('', self.palette['NUM'])
 
@@ -57,5 +56,8 @@ class NumNode(INode):
 
     def execute(self):
         value = (self.entry.get())
-        if value != '':
+        try:
+            value = float(value)
             self.output_sockets[''].set_value(float(value))
+        except ValueError:
+            pass

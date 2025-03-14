@@ -25,7 +25,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
     def create_new_project(self):
         path = 'application/New Project'
-        self.destroy()
+        self.withdraw()
 
         self.event_bus.raise_event(Event('Load', value=path))
 
@@ -34,9 +34,8 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         ar = np.zeros((1200, 1920))
 
-        self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
-        self.event_bus.raise_event(Event('Canvas Add Node', value=INode))
-        self.event_bus.raise_event(Event('Canvas Add Node', value=Parameter))
+        #self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
+        # self.event_bus.raise_event(Event('Canvas Add Node', value=Parameter))
         self.event_bus.raise_event(Event('Canvas Add Node', value=NumNode))
         #self.event_bus.raise_event(Event('Take Shot'))
 

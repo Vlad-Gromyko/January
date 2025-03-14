@@ -16,8 +16,11 @@ import inspect
 from application.core.services.node import INode
 
 class Start(INode):
-    def __init__(self, editor, canvas, palette, x, y):
-        super().__init__(editor, canvas, palette, x, y, text='START', color_text='#000', color_back='#FFF')
+    def __init__(self,config, editor, canvas, palette, x, y):
+        super().__init__(config,editor, canvas, palette, x, y, text='START',theme='program')
+
+        self.label.configure(fg_color='#FFF')
+        self.label.configure(text_color='#000')
 
         self.add_output_socket('', self.palette['SIGNAL'], self.width + 13, -self.height + 7)
         self.add_enter_socket('', self.palette['SIGNAL'], self.width + 13, -self.height + 7)
@@ -27,3 +30,8 @@ class Start(INode):
 
     def add_menu(self):
         self.menu.add_command(label='Информация', command=self.show_info)
+
+    def execute(self):
+        self.output_sockets[''].set_value(True)
+        self.output_sockets[''].set_value(None)
+

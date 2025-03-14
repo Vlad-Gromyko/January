@@ -91,17 +91,20 @@ class SLM(Service, ctk.CTkFrame):
         self.monitor = 1
         self.pixel_in_um = 1
 
+        self.events_reactions['Toggle SLM'] = lambda event: self.checks[0].toggle()
+
+
     def set_project(self, path):
-        slm_folder = path + '/slm'
+        slm_folder = path
         config = configparser.ConfigParser()
-        config.read(slm_folder + '/slm.ini')
+        config.read(path + '/field.ini')
         slm_name = config.sections()[0]
 
-        self.slm_width = int(config[slm_name]['WIDTH'])
-        self.slm_height = int(config[slm_name]['HEIGHT'])
-        self.slm_gray = int(config[slm_name]['GRAY'])
-        self.monitor = int(config[slm_name]['MONITOR'])
-        self.pixel_in_um = int(config[slm_name]['PIXEL_IN_UM'])
+        self.slm_width = int(config['SLM']['WIDTH'])
+        self.slm_height = int(config['SLM']['HEIGHT'])
+        self.slm_gray = int(config['SLM']['GRAY'])
+        self.monitor = int(config['SLM']['MONITOR'])
+        self.pixel_in_um = int(config['SLM']['PIXEL_IN_UM'])
 
         for item in ['total', 'holo', 'shift', 'calibrate', 'aberration']:
             if os.path.exists(slm_folder + '/' + item):
@@ -117,9 +120,11 @@ class SLM(Service, ctk.CTkFrame):
         if cv2.getWindowProperty('SLM', cv2.WND_PROP_VISIBLE):
             cv2.imshow('SLM', self.masks['total'].get_pixels())
 
+        cv2.waitKey(1)
+
     def redraw_slm(self):
         arrays = []
-        for item in [self.masks['total'], self.masks['holo'], self.masks['shift'], self.masks['calibrate'],
+        for item in [ self.masks['holo'], self.masks['shift'], self.masks['calibrate'],
                      self.masks['aberration']]:
             if item.mask is not None:
                 arrays.append(item.get_mask().get_array())

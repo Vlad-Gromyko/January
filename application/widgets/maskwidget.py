@@ -32,7 +32,6 @@ class MaskLabel(ctk.CTkFrame):
         plt.colorbar(im)
         plt.show()
 
-
     def save_bmp(self, mode='bmp'):
         new_file = fd.asksaveasfile(title="Сохранить голограмму", defaultextension=".bmp",
                                     filetypes=[('Numpy', '*.npy'), ('BitMap', '*.bmp*')], confirmoverwrite=True)
@@ -42,14 +41,13 @@ class MaskLabel(ctk.CTkFrame):
 
             array = self.mask.get_array()
 
-            if mode=='npy':
+            if mode == 'npy':
                 np.save(new_file.name, array)
 
-            if mode=='bmp':
+            if mode == 'bmp':
                 array = np.asarray(array / 2 / np.pi * 255, dtype='uint8')
                 image = Image.fromarray(array)
                 image.save(new_file.name)
-
 
     def right_click(self, event):
         self.menu.post(event.x_root, event.y_root)
@@ -62,6 +60,7 @@ class MaskLabel(ctk.CTkFrame):
         image = ctk.CTkImage(light_image=image, size=(int(size_x * self.size_scale), int(size_y * self.size_scale)))
 
         self.label.configure(image=image)
+        self.label.update_idletasks()
 
     def get_mask(self):
         return self.mask
@@ -69,3 +68,8 @@ class MaskLabel(ctk.CTkFrame):
     def get_pixels(self):
         array = np.asarray(self.mask.get_array() / 2 / np.pi * 255, dtype='uint8')
         return array
+
+    def get_scales_size(self):
+        height, width = np.shape(self.mask.get_array())
+
+        return int(width * self.size_scale), int(height * self.size_scale)

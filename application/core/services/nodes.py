@@ -12,8 +12,10 @@ from application.core.services.node import INode
 from application.core.services.special_nodes.start import Start
 from application.core.services.special_nodes.reactive import Parameter
 
-import os
+from application.core.services.special_nodes.holo import HoloNode
 
+import os
+import configparser
 from numpy import sign
 
 
@@ -29,7 +31,8 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         ctk.CTkButton(self.frame_buttons, text='Цветовая схема', width=25, height=25,
                       command=self.show_color_scheme).grid(row=0, column=1, padx=5)
 
-        self.button_action = ctk.CTkButton(self.frame_buttons, text='\u23F5', width=25, height=25)
+        self.button_action = ctk.CTkButton(self.frame_buttons, text='\u23F5', width=25, height=25,
+                                           command=self.start_execute)
         self.button_action.grid(row=0, column=0, padx=5)
 
         self.add_button = ctk.CTkButton(self.frame_buttons, text='\uFF0B', width=25, height=25,
@@ -52,21 +55,13 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.events_reactions['Canvas Ask Rename'] = lambda event: self.rename_canvas(event.get_value())
 
         self.events_reactions['Canvas Add Node'] = lambda event: self.add_node(event.get_value())
+        self.events_reactions['Add Node Holo'] = lambda event: self.add_node(HoloNode, mask=event.get_value()['mask'])
 
-        self.SIGNAL = '#FFF'
-        self.NUM = '#00A9F3'
-        self.STR = '#96e441'
-        self.BOOL = '#7D0A0A'
+        self.config = None
+        self.palette = dict()
 
-        self.palette = {'SIGNAL': '#FFF',
-                        'NUM': '#0000FF',
-                        'STR': '#7FFFD4',
-                        'BOOL': '#FF0000',
-                        'NUM_LIST': '#00008B',
-                        'HOLOGRAM': '#00FF00',
-                        'HOLOGRAM_LIST': '#00FA9A',
-                        'CAMERA_SHOT': '#FF4500'
-                        }
+    def start_execute(self):
+        self.active_tab.start_execute()
 
     def show_color_scheme(self):
         self.active_tab.show_color_scheme()
@@ -96,7 +91,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                 showwarning(message="Холст с названием " + ask + ' уже существует')
 
     def add_canvas(self, name):
-        tab = CanvasTab(self, name, self.palette)
+        tab = CanvasTab(self, name, self.config, self.palette)
 
         self.event_bus.add_service(tab)
 
@@ -123,13 +118,23 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         if self.active_tab:
             self.active_tab.canvas.grid(row=1, column=0, sticky='nsew')
 
-    def add_node(self, node=INode):
-        self.active_tab.add_node(node)
+    def add_node(self, node=INode, **kwargs):
+        self.active_tab.add_node(node, **kwargs)
 
     def set_project(self, path):
+        self.config = configparser.ConfigParser()
+        self.config.read(path + '/field.ini')
         canvases_folder = path + '/canvases'
 
         folders = os.listdir(canvases_folder)
+
+        self.palette['SIGNAL'] = self.config['NODES_TYPES']['signal']
+        self.palette['BOOL'] = self.config['NODES_TYPES']['bool']
+        self.palette['NUM'] = self.config['NODES_TYPES']['num']
+        self.palette['NUM_LIST'] = self.config['NODES_TYPES']['num_list']
+        self.palette['HOLOGRAM'] = self.config['NODES_TYPES']['hologram']
+        self.palette['HOLOGRAM_LIST'] = self.config['NODES_TYPES']['hologram_list']
+        self.palette['CAMERA_SHOT'] = self.config['NODES_TYPES']['camera_shot']
 
         if len(folders) == 0:
             self.add_canvas('Новый Холст')
@@ -167,13 +172,10 @@ class Wire:
         self.draw()
 
         if self.output.get_value() is not None:
-
             self.kick_value(self.output.get_value())
 
     def kick_value(self, value):
         self.enter.set_value(value)
-
-
 
     def draw(self):
         x_enter, y_enter = self.enter.center(self.enter.oval_ID)
@@ -221,10 +223,12 @@ class Wire:
 
 
 class CanvasTab(Service, ctk.CTkFrame):
-    def __init__(self, master, name, palette):
+    def __init__(self, master, name, config, palette):
         Service.__init__(self)
         ctk.CTkFrame.__init__(self, master.scroll)
         self.name = name
+
+        self.config = config
 
         self.palette = palette
 
@@ -244,6 +248,8 @@ class CanvasTab(Service, ctk.CTkFrame):
         self.events_reactions['Canvas Selected'] = lambda event: self.it_is_me(event.get_value())
         self.events_reactions['Accept Canvas Rename'] = lambda event: self.rename(event.get_value()['old_name'],
                                                                                   event.get_value()['new_name'], )
+
+        self.events_reactions['Canvas Add Hologram'] = lambda event: self.it_is_me(event.get_value())
 
         self.nodes = []
 
@@ -266,6 +272,7 @@ class CanvasTab(Service, ctk.CTkFrame):
         self.second_socket = None
 
         self.canvas.bind('<Button-1>', self.start_move)
+        self.canvas.bind('<Button-3>', self.start_move_right)
         self.canvas.bind('<Motion>', self.do_move)
         self.canvas.bind('<ButtonRelease>', self.end_move)
 
@@ -276,9 +283,25 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         self.shifting = False
 
+        self.rect_drawing = False
+        self.rect_x = 0
+        self.rect_y = 0
+
+        self.rect_list = []
+
+        self.rect_ID = None
+
         self.color_scheme = False
 
         self.scheme = []
+
+        self.drop_target_register(DND_ALL)
+  
+
+    def start_execute(self):
+        for node in self.nodes:
+            if isinstance(node, Start):
+                node.execute()
 
     def show_color_scheme(self):
         if self.color_scheme:
@@ -318,7 +341,6 @@ class CanvasTab(Service, ctk.CTkFrame):
     def start_move(self, event):
         tag = self.canvas.find_closest(event.x, event.y)[0]
 
-
         if tag in self.socket_enter_IDs or tag in self.socket_output_IDs:
             self.first_socket = tag
 
@@ -328,12 +350,21 @@ class CanvasTab(Service, ctk.CTkFrame):
 
             self.start_wire(event)
         else:
-            self.shift_x = event.x
-            self.shift_y = event.y
+            self.rect_x = event.x
+            self.rect_y = event.y
 
-            self.shifting = True
-            for node in self.nodes:
-                node.start_move(event)
+            self.rect_drawing = True
+
+
+
+    def start_move_right(self, event):
+
+        self.shift_x = event.x
+        self.shift_y = event.y
+
+        self.shifting = True
+        for node in self.nodes:
+            node.start_move(event)
 
     def move_all(self, event):
 
@@ -357,6 +388,17 @@ class CanvasTab(Service, ctk.CTkFrame):
             self.draw_wire(event.x, event.y)
         if self.shifting:
             self.move_all(event)
+        if self.rect_drawing:
+            if self.rect_ID:
+                self.canvas.delete(self.rect_ID)
+            self.rect_ID = self.canvas.create_rectangle(self.rect_x, self.rect_y, event.x, event.y, fill='#4682B4')
+            self.canvas.tag_lower(self.rect_ID)
+
+            for node in self.nodes:
+                if  min(event.x, self.rect_x) <= node.x <= max(event.x, self.rect_x):
+                    if min(event.y, self.rect_y) <= node.y <= max(event.y, self.rect_y):
+                        self.rect_list.append(node)
+                        node.start_move(event)
 
     def draw_wire(self, x, y):
         if self.wire_line:
@@ -383,6 +425,10 @@ class CanvasTab(Service, ctk.CTkFrame):
             for node in self.nodes:
                 node.end_move(event)
 
+        if self.rect_drawing:
+            self.rect_drawing = False
+            self.canvas.delete(self.rect_ID)
+
     def try_connect(self):
         self.first_socket = self.find_socket(self.first_socket)
         self.second_socket = self.find_socket(self.second_socket)
@@ -403,10 +449,10 @@ class CanvasTab(Service, ctk.CTkFrame):
             node = self.socket_output_to_node_IDs[tag]
             return node.output_sockets_ovals[tag]
 
-    def add_node(self, node):
+    def add_node(self, node, **kwargs):
         x = 300 + random.randint(-30, 30)
         y = 300 + random.randint(-30, 30)
-        node = node(self, self.canvas, self.palette, x, y)
+        node = node(self.config, self, self.canvas, self.palette, x, y, **kwargs)
         node.run()
 
         self.event_bus.add_service(node)

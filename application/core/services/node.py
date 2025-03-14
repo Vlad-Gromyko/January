@@ -79,9 +79,9 @@ class Socket(CanvasElement):
             editor.socket_output_to_node_IDs[self.oval_ID] = node
 
     def get_value(self):
-        if self.wire:
-            return self._value_to_hold
-        return None
+
+        return self._value_to_hold
+
 
     def set_value(self, value):
         self._value_to_hold = value
@@ -89,9 +89,7 @@ class Socket(CanvasElement):
         if self.wire and not self.enter:
             self.wire.kick_value(self._value_to_hold)
 
-
-        if self.wire and self.enter:
-
+        if self.enter:
             self.node.try_execute()
 
     def delete_socket(self):
@@ -123,19 +121,23 @@ class Socket(CanvasElement):
 
 
 class INode(CanvasElement, Service):
-    def __init__(self, editor, canvas, palette, x, y, text='Node', color_text='#FFF', color_back='#000'):
+    def __init__(self, config, editor, canvas, palette, x, y, text='Node', theme='program', **kwargs):
         CanvasElement.__init__(self, editor, canvas, x, y)
         Service.__init__(self)
 
         self.palette = palette
 
+        self.config = config
+
         self.text = text
 
-        self.color_text = color_text
-        self.color_back = color_back
+        self.color_back = config['NODES_CATEGORIES'][theme]
+        self.widget_width = 0
+        self.widget_height = 0
 
         my_font = ctk.CTkFont(family="<Arial>", size=14, weight='bold')
-        self.label = ctk.CTkLabel(canvas, text=text, text_color=color_text, fg_color=color_back, font=my_font)
+        self.label = ctk.CTkLabel(canvas, text=text, text_color='#FFF', fg_color='#000', font=my_font,
+                                  anchor=ctk.NW)
 
         self.frame_IDs = dict()
 
@@ -147,6 +149,7 @@ class INode(CanvasElement, Service):
         self.width = bounds[2] - bounds[0] + 2
 
         self.frame_IDs['back'] = None
+        self.frame_IDs['widgets'] = None
 
         self.enter_sockets = {}
         self.output_sockets = {}
@@ -154,9 +157,9 @@ class INode(CanvasElement, Service):
         self.enter_sockets_ovals = {}
         self.output_sockets_ovals = {}
 
-        self.label.bind('<Button-1>', self.start_move)
-        self.label.bind('<Motion>', self.move)
-        self.label.bind('<ButtonRelease>', self.end_move)
+        #self.label.bind('<Button-1>', self.start_move)
+        #self.label.bind('<Motion>', self.move)
+        #self.label.bind('<ButtonRelease>', self.end_move)
 
         self.menu = tkinter.Menu(self.canvas, tearoff=0)
         self.label.bind('<Button-3>', self.right_click)
@@ -166,6 +169,8 @@ class INode(CanvasElement, Service):
 
         self.enter_width = 0
         self.output_width = 0
+
+        self.chosen_one = False
 
     def get_func_inputs(self):
         func_inputs = dict()
@@ -180,11 +185,15 @@ class INode(CanvasElement, Service):
 
         for item in self.enter_sockets.values():
 
-            if item.get_value() is  None:
+            if item.get_value() is None:
                 go = False
 
         if go:
             self.execute()
+            for name in self.output_sockets.keys():
+                if self.output_sockets[name].color == self.palette['SIGNAL']:
+                    self.output_sockets[name].set_value(None)
+
 
     def execute(self):
         pass
@@ -252,7 +261,7 @@ class INode(CanvasElement, Service):
             self.output_sockets_ovals[output.oval_ID] = output
 
     def move_outputs(self):
-        width = max(100, self.enter_width + self.output_width + 30)
+        width = max(100, self.enter_width + self.output_width + 30, self.widget_width)
 
         for value in self.output_sockets.values():
             value.forced_move(width, 0)
@@ -270,6 +279,16 @@ class INode(CanvasElement, Service):
                                                               fill='#000')
 
         self.canvas.tag_lower(self.frame_IDs['back'])
+
+        self.frame_IDs['theme1'] = self.canvas.create_rectangle(self.x + self.width - 5, self.y,
+                                                                self.x + width,
+                                                                self.y + self.height,
+                                                                fill=self.color_back)
+        self.canvas.tag_raise(self.frame_IDs['theme1'])
+
+        if self.frame_IDs['widgets']:
+            self.canvas.move(self.frame_IDs['widgets'], 0, 2 + max(self.output_height,
+                                                               self.enter_height) + self.height)
 
     def start_move(self, event):
         self.moving = True

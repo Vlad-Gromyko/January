@@ -47,14 +47,8 @@ class App:
         self.down_notebook = ctk.CTkTabview(self.main_window, anchor='w', height=150)
         self.down_notebook.grid(row=2, column=0, columnspan=3, sticky='ew')
 
-
-        self.down_notebook.add('Ноды')
         self.down_notebook.add('Атлас')
         self.down_notebook.add('Сумматор')
-
-        self.nodes_catalog = NodeCatalog(self.down_notebook.tab('Ноды'))
-        self.nodes_catalog.grid()
-        self.event_bus.add_service(self.nodes_catalog)
 
 
         self.atlas = Atlas(self.down_notebook.tab('Атлас'))
@@ -69,10 +63,15 @@ class App:
         self.right_notebook.grid(row=0, column=4, columnspan=1, rowspan=2, sticky='nsew', pady=5)
 
         self.right_notebook.add('Инспектор Сущностей')
+        self.right_notebook.add('Ноды')
         self.right_notebook.add('Камера')
         self.right_notebook.add('Ловушки')
         self.right_notebook.add('Цернике')
-        self.right_notebook.add('Моды')
+
+        self.nodes_catalog = NodeCatalog(self.right_notebook.tab('Ноды'))
+        self.nodes_catalog.grid()
+        self.event_bus.add_service(self.nodes_catalog)
+
 
         self.camera = Camera(self.right_notebook.tab('Камера'))
         self.right_notebook.tab('Камера').grid_columnconfigure([0], weight=1)
@@ -89,14 +88,14 @@ class App:
         self.event_bus.add_service(self.zernike)
 
         self.down_right = ctk.CTkFrame(self.main_window)
-        self.down_right.grid(row=2, column=3, columnspan=2, rowspan=1, sticky='nsew', pady=5, padx=5)
+        self.down_right.grid(row=2, column=3, columnspan=2, rowspan=2, sticky='nsew', pady=5, padx=5)
 
         self.slm = SLM(self.down_right)
         self.slm.grid(sticky='nsew')
         self.event_bus.add_service(self.slm)
 
         self.status = StatusBar(self.main_window)
-        self.status.grid(row=3, column=0, columnspan=5, sticky='ew')
+        self.status.grid(row=3, column=0, columnspan=4, sticky='ew')
 
         self.event_bus.add_service(self.status)
 

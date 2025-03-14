@@ -8,6 +8,7 @@ import importlib.util
 import os
 from os import listdir
 from os.path import isfile, join
+from pathlib import Path
 
 
 class NodeCatalog(Service, ctk.CTkFrame):
@@ -15,9 +16,6 @@ class NodeCatalog(Service, ctk.CTkFrame):
         Service.__init__(self)
         ctk.CTkFrame.__init__(self, master)
         self.name = 'NodeCatalog'
-
-        self.scroll = ctk.CTkScrollableFrame(self, width=1120, height=150, orientation='horizontal')
-        self.scroll.grid(padx=5, pady=5)
 
         self.events_reactions['Register Node'] = lambda event: self.register_node(event.get_value())
 
@@ -36,9 +34,10 @@ class NodeCatalog(Service, ctk.CTkFrame):
 
 
     def register_nodes_in_folder(self, dir_path):
-        files = [f for f in listdir(dir_path) if isfile(join(dir_path, f))]
-        for item in files:
-            self.dynamic_import(os.path.join(dir_path, item))
+        for dirpath, _, filenames in os.walk(dir_path):
+            for f in filenames:
+                    if f.split('.')[-1]=='py':
+                        self.dynamic_import(os.path.abspath(os.path.join(dirpath, f)))
 
     def dynamic_import(self, path):
         module = self.import_module_from_path(path)
