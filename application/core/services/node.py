@@ -302,10 +302,15 @@ class INode(CanvasElement, Service):
         self.moving = True
 
     def start_move_rect(self, event):
+        if not self.chosen_one:
+            for node in self.editor.nodes:
+                node.no_choose()
+
         self.choose()
         for node in self.editor.nodes:
             if node.chosen_one:
                 node.start_move(event)
+
 
     def move_rect(self, event):
         for node in self.editor.nodes:
@@ -316,7 +321,7 @@ class INode(CanvasElement, Service):
         for node in self.editor.nodes:
             if node.chosen_one:
                 node.end_move(event)
-        self.no_choose()
+        #self.no_choose()
 
     def end_move(self, event):
         self.moving = False
