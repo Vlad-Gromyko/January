@@ -454,10 +454,17 @@ class CanvasTab(Service, ctk.CTkFrame):
             return node.output_sockets_ovals[tag]
 
     def add_node(self, node, **kwargs):
+
+
         x = 300 + random.randint(-30, 30)
         y = 300 + random.randint(-30, 30)
         node = node(self.config, self, self.canvas, self.palette, x, y, **kwargs)
         node.run()
+
+        if len(self.nodes)>0:
+            self.nodes[-1].no_choose()
+
+        node.choose()
 
         self.event_bus.add_service(node)
 
