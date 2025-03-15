@@ -300,6 +300,7 @@ class CanvasTab(Service, ctk.CTkFrame):
 
     def start_execute(self):
         for node in self.nodes:
+            node.no_choose()
             if isinstance(node, Start):
                 node.execute()
 

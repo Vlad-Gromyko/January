@@ -197,7 +197,9 @@ class INode(CanvasElement, Service):
                 go = False
 
         if go:
+            self.choose()
             self.execute()
+            self.no_choose()
             for name in self.output_sockets.keys():
                 if self.output_sockets[name].color == self.palette['SIGNAL']:
                     self.output_sockets[name].set_value(None)
