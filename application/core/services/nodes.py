@@ -135,6 +135,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.palette['HOLOGRAM'] = self.config['NODES_TYPES']['hologram']
         self.palette['HOLOGRAM_LIST'] = self.config['NODES_TYPES']['hologram_list']
         self.palette['CAMERA_SHOT'] = self.config['NODES_TYPES']['camera_shot']
+        self.palette['ANY'] = self.config['NODES_TYPES']['any']
 
         if len(folders) == 0:
             self.add_canvas('Новый Холст')
@@ -296,7 +297,6 @@ class CanvasTab(Service, ctk.CTkFrame):
         self.scheme = []
 
         self.drop_target_register(DND_ALL)
-  
 
     def start_execute(self):
         for node in self.nodes:
@@ -341,6 +341,7 @@ class CanvasTab(Service, ctk.CTkFrame):
 
     def start_move(self, event):
         tag = self.canvas.find_closest(event.x, event.y)[0]
+        print(self.canvas.find_closest(event.x, event.y))
         for node in self.nodes:
             node.no_choose()
 
@@ -357,8 +358,6 @@ class CanvasTab(Service, ctk.CTkFrame):
             self.rect_y = event.y
 
             self.rect_drawing = True
-
-
 
     def start_move_right(self, event):
 
@@ -399,11 +398,10 @@ class CanvasTab(Service, ctk.CTkFrame):
 
             for node in self.nodes:
                 node.no_choose()
-                if  min(event.x, self.rect_x) <= node.x <= max(event.x, self.rect_x):
+                if min(event.x, self.rect_x) <= node.x <= max(event.x, self.rect_x):
                     if min(event.y, self.rect_y) <= node.y <= max(event.y, self.rect_y):
                         self.rect_list.append(node)
                         node.choose()
-
 
     def draw_wire(self, x, y):
         if self.wire_line:
@@ -439,7 +437,8 @@ class CanvasTab(Service, ctk.CTkFrame):
         self.second_socket = self.find_socket(self.second_socket)
 
         if self.first_socket.enter ^ self.second_socket.enter:
-            if self.first_socket.color == self.second_socket.color:
+            if (self.first_socket.color == self.second_socket.color) or (
+                    self.first_socket.color == self.palette['ANY']) or (self.second_socket.color == self.palette['ANY']):
                 self.connect_wire()
 
     def connect_wire(self):
@@ -456,13 +455,12 @@ class CanvasTab(Service, ctk.CTkFrame):
 
     def add_node(self, node, **kwargs):
 
-
         x = 300 + random.randint(-30, 30)
         y = 300 + random.randint(-30, 30)
         node = node(self.config, self, self.canvas, self.palette, x, y, **kwargs)
         node.run()
 
-        if len(self.nodes)>0:
+        if len(self.nodes) > 0:
             self.nodes[-1].no_choose()
 
         node.choose()
