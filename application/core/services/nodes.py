@@ -214,8 +214,8 @@ class Wire:
         self.canvas.tag_bind(self.ID, '<Button-3>', self.shut_wire)
 
     def shut_wire(self, event=None):
-        self.enter.wire = None
-        self.output.wire = None
+        self.enter.wires.remove(self)
+        self.output.wires.remove(self)
 
         self.enter = None
         self.output = None
@@ -341,7 +341,7 @@ class CanvasTab(Service, ctk.CTkFrame):
 
     def start_move(self, event):
         tag = self.canvas.find_closest(event.x, event.y)[0]
-        print(self.canvas.find_closest(event.x, event.y))
+
         for node in self.nodes:
             node.no_choose()
 
@@ -440,6 +440,9 @@ class CanvasTab(Service, ctk.CTkFrame):
             if (self.first_socket.color == self.second_socket.color) or (
                     self.first_socket.color == self.palette['ANY']) or (self.second_socket.color == self.palette['ANY']):
                 self.connect_wire()
+
+    def are_sockets_connected(self, first, second):
+        pass
 
     def connect_wire(self):
         wire = Wire(self, self.canvas, self.first_socket, self.second_socket)
