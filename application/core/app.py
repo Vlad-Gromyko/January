@@ -34,70 +34,43 @@ class App:
         ### On main
 
         self.nodes = NodeEditor(self.main_window)
-        self.nodes.grid(row=0, column=0, rowspan=2, columnspan=4)
+        self.nodes.grid(row=0, column=0, sticky='nsew')
         self.event_bus.add_service(self.nodes)
-
-
 
         self.menu = TopMenu(self.main_window)
         self.event_bus.add_service(self.menu)
 
         self.main_window.config(menu=self.menu.menu)
 
-        self.down_notebook = ctk.CTkTabview(self.main_window, anchor='w', height=150)
-        self.down_notebook.grid(row=2, column=0, columnspan=3, sticky='ew')
+        self.atlas = Atlas(self.main_window)
 
-        self.down_notebook.add('Атлас')
-        self.down_notebook.add('Сумматор')
-
-
-        self.atlas = Atlas(self.down_notebook.tab('Атлас'))
-        self.atlas.grid()
         self.event_bus.add_service(self.atlas)
 
-        self.combiner = Combiner(self.down_notebook.tab('Сумматор'))
-        self.combiner.grid()
+        self.combiner = Combiner(self.main_window)
+
         self.event_bus.add_service(self.combiner)
 
-        self.right_notebook = ctk.CTkTabview(self.main_window, anchor='w', width=365)
-        self.right_notebook.grid(row=0, column=4, columnspan=1, rowspan=2, sticky='nsew', pady=5)
-
-        self.right_notebook.add('Инспектор Сущностей')
-        self.right_notebook.add('Ноды')
-        self.right_notebook.add('Камера')
-        self.right_notebook.add('Ловушки')
-        self.right_notebook.add('Цернике')
-
-        self.nodes_catalog = NodeCatalog(self.right_notebook.tab('Ноды'))
-        self.nodes_catalog.grid()
+        self.nodes_catalog = NodeCatalog(self.main_window)
         self.event_bus.add_service(self.nodes_catalog)
 
-
-        self.camera = Camera(self.right_notebook.tab('Камера'))
-        self.right_notebook.tab('Камера').grid_columnconfigure([0], weight=1)
-        self.camera.grid(sticky='ew', row=0, column=0)
+        self.camera = Camera(self.main_window)
         self.event_bus.add_service(self.camera)
 
-        self.traps = Traps(self.right_notebook.tab('Ловушки'))
-        self.traps.grid(sticky='ew', row=0, column=0)
+        self.traps = Traps(self.main_window)
         self.event_bus.add_service(self.traps)
 
-        self.zernike = Zernike(self.right_notebook.tab('Цернике'))
-        self.right_notebook.tab('Цернике').grid_columnconfigure([0], weight=1)
-        self.zernike.grid(sticky='ew', row=0, column=0)
+        self.zernike = Zernike(self.main_window)
         self.event_bus.add_service(self.zernike)
 
-        self.down_right = ctk.CTkFrame(self.main_window)
-        self.down_right.grid(row=2, column=3, columnspan=2, rowspan=2, sticky='nsew', pady=5, padx=5)
 
-        self.slm = SLM(self.down_right)
-        self.slm.grid(sticky='nsew')
+        self.slm = SLM(self.main_window)
+
         self.event_bus.add_service(self.slm)
 
-        self.status = StatusBar(self.main_window)
-        self.status.grid(row=3, column=0, columnspan=4, sticky='ew')
+        #self.status = StatusBar(self.main_window)
+        #self.status.grid(row=3, column=0, columnspan=4, sticky='ew')
 
-        self.event_bus.add_service(self.status)
+        #self.event_bus.add_service(self.status)
 
     def run(self):
         self.main_window.mainloop()

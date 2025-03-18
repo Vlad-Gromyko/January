@@ -18,11 +18,12 @@ from application.core.utility.mask import Mask
 from application.widgets.maskwidget import MaskLabel
 
 
-class Traps(Service, ctk.CTkFrame):
+class Traps(Service, ctk.CTkToplevel):
     def __init__(self, master):
         Service.__init__(self)
-        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkToplevel.__init__(self, master)
         self.name = 'Traps'
+        self.title(self.name)
 
         ctk.CTkButton(self, text='Карта Ловушек \u287E', command=self.show_traps).grid(row=0, column=0, padx=5)
 
@@ -90,6 +91,23 @@ class Traps(Service, ctk.CTkFrame):
         self.fields['Traps'] = []
 
         self.sheet.bind('<<SheetModified>>', self.update_traps)
+        self.withdraw()
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.events_reactions['Show/Hide Service Traps'] = lambda event: self.deiconify()
+
+        self.visible = False
+
+    def show_and_hide(self):
+        if self.visible:
+            self.withdraw()
+        else:
+            self.deiconify()
+        self.visible = not self.visible
+
+    def on_closing(self):
+        self.visible = False
+        self.withdraw()
 
     def update_traps(self, event=None):
         self.fields['Traps'] = self.get_specs()

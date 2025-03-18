@@ -15,11 +15,12 @@ from application.core.utility.mask import Mask
 from application.widgets.maskwidget import MaskLabel
 
 
-class Camera(Service, ctk.CTkFrame):
+class Camera(Service, ctk.CTkToplevel):
     def __init__(self, master):
         Service.__init__(self)
-        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkToplevel.__init__(self, master)
         self.name = 'Camera'
+        self.title('Камера')
 
         self.grid_columnconfigure([0], weight=1)
 
@@ -65,6 +66,23 @@ class Camera(Service, ctk.CTkFrame):
         self.fields['Back'] = self.back
         self.fields['Shot'] = self.last_shot
         self.fields['Shot - Back'] = self.clear
+        self.withdraw()
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.events_reactions['Show/Hide Service Camera'] = lambda event: self.deiconify()
+
+        self.visible = False
+
+    def show_and_hide(self):
+        if self.visible:
+            self.withdraw()
+        else:
+            self.deiconify()
+        self.visible = not self.visible
+
+    def on_closing(self):
+        self.visible = False
+        self.withdraw()
 
     def set_project(self, path):
         config = configparser.ConfigParser()

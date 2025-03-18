@@ -15,11 +15,12 @@ from application.core.utility.mask import Mask
 from application.widgets.maskwidget import MaskLabel
 
 
-class Zernike(Service, ctk.CTkFrame):
+class Zernike(Service, ctk.CTkToplevel):
     def __init__(self, master):
         Service.__init__(self)
-        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkToplevel.__init__(self, master)
         self.name = 'Zernike'
+        self.title(self.name)
 
         self.notebook = ctk.CTkTabview(self)
         self.notebook.grid()
@@ -87,6 +88,23 @@ class Zernike(Service, ctk.CTkFrame):
                 pady=5)
 
         self.zernike_masks = []
+        self.withdraw()
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.events_reactions['Show/Hide Service Zernike'] = lambda event: self.deiconify()
+
+        self.visible = False
+
+    def show_and_hide(self):
+        if self.visible:
+            self.withdraw()
+        else:
+            self.deiconify()
+        self.visible = not self.visible
+
+    def on_closing(self):
+        self.visible = False
+        self.withdraw()
 
     def show_mask(self, num):
         im = plt.imshow((self.zernike_masks[num] * float(self.entries[num].get())) % (2 * np.pi))

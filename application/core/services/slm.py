@@ -13,11 +13,12 @@ from application.core.utility.mask import Mask
 from application.widgets.maskwidget import MaskLabel
 
 
-class SLM(Service, ctk.CTkFrame):
+class SLM(Service, ctk.CTkToplevel):
     def __init__(self, master):
         Service.__init__(self)
-        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkToplevel.__init__(self, master)
         self.name = 'SLM'
+        self.title(self.name)
 
         notebook = ctk.CTkTabview(self, anchor='w', width=350)
         notebook.grid(padx=5, pady=5, sticky='nsew')
@@ -92,6 +93,24 @@ class SLM(Service, ctk.CTkFrame):
         self.pixel_in_um = 1
 
         self.events_reactions['Toggle SLM'] = lambda event: self.checks[0].toggle()
+
+        self.withdraw()
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.events_reactions['Show/Hide Service SLM'] = lambda event: self.deiconify()
+
+        self.visible = False
+
+    def show_and_hide(self):
+        if self.visible:
+            self.withdraw()
+        else:
+            self.deiconify()
+        self.visible = not self.visible
+
+    def on_closing(self):
+        self.visible = False
+        self.withdraw()
 
 
     def set_project(self, path):

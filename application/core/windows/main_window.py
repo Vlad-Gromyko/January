@@ -16,11 +16,16 @@ class MainWindow(Service, ctk.CTk):
         self.dnd_bind("<<DropLeave>>", self.drop_fall)
 
         self.title('Hyperion')
-        self.geometry('1680x1050')
-        self.iconify()
+        width = self.winfo_screenwidth()
+        height = self.winfo_screenheight()
+        self.geometry(f'{width}x{height}+0+0')
+        self.state('zoomed')
+        self.withdraw()
 
         self.events_reactions['Project Loaded'] = lambda event: self.deiconify()
         self.events_reactions['Load'] = lambda event: self.title(f'Hyperion  {event.get_value().split('/')[-1]}')
+
+        self.grid_columnconfigure((0), weight=1)
 
     def drop(self, event):
         self.event_bus.raise_event(Event('Drop Start'))

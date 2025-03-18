@@ -48,7 +48,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.fields['Canvas Names'] = []
 
         self.scroll = ctk.CTkScrollableFrame(self.frame_buttons, orientation='horizontal', height=25, width=900)
-        self.scroll.grid(row=0, column=3, padx=5, sticky='w')
+        self.scroll.grid(row=0, column=3, padx=5, sticky='ew')
 
         self.events_reactions['Canvas Close'] = lambda event: self.close_canvas(event.get_value())
         self.events_reactions['Canvas Selected'] = lambda event: self.choose_canvas(event.get_value())
@@ -116,7 +116,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
             item.grid(row=0, column=counter)
 
         if self.active_tab:
-            self.active_tab.canvas.grid(row=1, column=0, sticky='nsew')
+            self.active_tab.canvas.grid(row=1, column=0, sticky='nsew', columnspan=2)
 
     def add_node(self, node=INode, **kwargs):
         self.active_tab.add_node(node, **kwargs)
@@ -242,7 +242,7 @@ class CanvasTab(Service, ctk.CTkFrame):
                                           command=self.close_me)
         self.button_close.grid(row=0, column=1, sticky='ew')
 
-        self.canvas = tkinter.Canvas(self.canvas_place, width=1120, height=650, bg='#363636')
+        self.canvas = tkinter.Canvas(self.canvas_place, width=1650, height=900, bg='#363636')
         self.canvas.grid(row=1, column=0, sticky='nsew')
 
         self.events_reactions['Canvas Selected'] = lambda event: self.it_is_me(event.get_value())

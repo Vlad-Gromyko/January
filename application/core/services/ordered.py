@@ -14,11 +14,12 @@ from application.widgets.maskwidget import MaskLabel
 
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
-class Atlas(Service, ctk.CTkFrame):
+class Atlas(Service, ctk.CTkToplevel):
     def __init__(self, master):
         Service.__init__(self)
-        ctk.CTkFrame.__init__(self, master)
+        ctk.CTkToplevel.__init__(self, master)
         self.name = 'Atlas'
+        self.title(self.name)
 
         self.cages = []
 
@@ -43,6 +44,24 @@ class Atlas(Service, ctk.CTkFrame):
 
         self.drop_target_register(DND_ALL)
         self.dnd_bind("<<Drop>>", self.to_drop)
+
+        self.withdraw()
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.events_reactions['Show/Hide Service Atlas'] = lambda event: self.deiconify()
+
+        self.visible = False
+
+    def show_and_hide(self):
+        if self.visible:
+            self.withdraw()
+        else:
+            self.deiconify()
+        self.visible = not self.visible
+
+    def on_closing(self):
+        self.visible = False
+        self.withdraw()
 
     def to_drop(self, event):
         dropped_file = event.data.replace("{", "").replace("}", "")
@@ -214,6 +233,7 @@ class Combiner(Atlas):
         super().__init__(master)
 
         self.name = 'Combiner'
+        self.title(self.name)
 
         self.left_frame.grid(row=0, column=1, padx=5, pady=5)
 
@@ -249,6 +269,11 @@ class Combiner(Atlas):
         self.events_reactions.pop('Add Atlas', None)
         self.events_reactions['Add Combiner'] = lambda event: self.add_cage(event.get_value()['mask'],
                                                                             event.get_value()['text'])
+
+
+        self.events_reactions.pop('Show/Hide Service Atlas')
+        self.events_reactions['Show/Hide Service Combiner'] = lambda event: self.deiconify()
+
 
     def set_project(self, path):
         slm_folder = path + '/slm'
