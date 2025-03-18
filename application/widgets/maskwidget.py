@@ -60,6 +60,7 @@ class MaskLabel(ctk.CTkFrame):
         image = ctk.CTkImage(light_image=image, size=(int(size_x * self.size_scale), int(size_y * self.size_scale)))
 
         self.label.configure(image=image)
+
         self.label.update_idletasks()
 
     def get_mask(self):

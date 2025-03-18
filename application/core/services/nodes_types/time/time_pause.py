@@ -18,6 +18,7 @@ class Node(INode):
         self.add_output_socket('', self.palette['SIGNAL'])
 
         self.add_enter_socket('Сек.', self.palette['NUM'])
+        self.add_enter_socket('Yo.', self.palette['ANY'])
 
     def execute(self):
         arguments = self.get_func_inputs()

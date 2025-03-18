@@ -67,7 +67,7 @@ class Socket(CanvasElement):
         self.width = bounds[2] - bounds[0] + 15
         self.height = bounds[3] - bounds[1] + 2
 
-        self.wire = None
+        self.wires = []
 
         if self.enter:
             editor.socket_enter_IDs.append(self.oval_ID)
@@ -82,12 +82,12 @@ class Socket(CanvasElement):
 
         return self._value_to_hold
 
-
     def set_value(self, value):
         self._value_to_hold = value
 
-        if self.wire and not self.enter:
-            self.wire.kick_value(self._value_to_hold)
+        if not self.enter:
+            for wire in self.wires:
+                wire.kick_value(self._value_to_hold)
 
         if self.enter:
             self.node.try_execute()
@@ -95,8 +95,8 @@ class Socket(CanvasElement):
     def delete_socket(self):
         self.canvas.delete(self.oval_ID)
         self.canvas.delete(self.text_ID)
-        if self.wire:
-            self.wire.shut_wire()
+        for wire in self.wires:
+            wire.shut_wire()
 
     def coords(self, x, y):
         self.x = x
@@ -111,13 +111,12 @@ class Socket(CanvasElement):
         self.canvas.move(self.oval_ID, x, y, )
         self.canvas.move(self.text_ID, x, y, )
 
-        if self.wire:
-            self.wire.draw()
+        for wire in self.wires:
+            wire.draw()
 
     def new_wire(self, wire):
-        if self.wire:
-            self.wire.shut_wire(0)
-        self.wire = wire
+
+        self.wires.append(wire)
 
 
 class INode(CanvasElement, Service):
@@ -197,11 +196,12 @@ class INode(CanvasElement, Service):
                 go = False
 
         if go:
+            self.choose()
             self.execute()
+            self.no_choose()
             for name in self.output_sockets.keys():
                 if self.output_sockets[name].color == self.palette['SIGNAL']:
                     self.output_sockets[name].set_value(None)
-
 
     def execute(self):
         pass
@@ -296,7 +296,7 @@ class INode(CanvasElement, Service):
 
         if self.frame_IDs['widgets']:
             self.canvas.move(self.frame_IDs['widgets'], 0, 2 + max(self.output_height,
-                                                               self.enter_height) + self.height)
+                                                                   self.enter_height) + self.height)
 
     def start_move(self, event):
         self.moving = True
@@ -311,7 +311,6 @@ class INode(CanvasElement, Service):
             if node.chosen_one:
                 node.start_move(event)
 
-
     def move_rect(self, event):
         for node in self.editor.nodes:
             if node.chosen_one:
@@ -321,7 +320,7 @@ class INode(CanvasElement, Service):
         for node in self.editor.nodes:
             if node.chosen_one:
                 node.end_move(event)
-        #self.no_choose()
+        # self.no_choose()
 
     def end_move(self, event):
         self.moving = False
