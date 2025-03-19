@@ -16,8 +16,8 @@ import inspect
 from application.core.services.node import INode
 
 class Start(INode):
-    def __init__(self,config, editor, canvas, palette, x, y):
-        super().__init__(config,editor, canvas, palette, x, y, text='START',theme='program')
+    def __init__(self,config, editor, canvas, palette, x, y, text, theme):
+        super().__init__(config,editor, canvas, palette, x, y, text,theme)
 
         self.label.configure(fg_color='#FFF')
         self.label.configure(text_color='#000')
@@ -43,3 +43,6 @@ class Start(INode):
         self.chosen_one = False
         self.label.configure(fg_color='#FFF')
 
+    @staticmethod
+    def create_info():
+        return Start, 'Старт', 'hologram'

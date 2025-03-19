@@ -9,8 +9,8 @@ from application.core.utility.mask import Mask
 
 
 class Node(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, **kwargs):
-        super().__init__(config, editor, canvas, palette, x, y, text='For', theme='hologram', **kwargs)
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text, theme, **kwargs)
 
         self.add_enter_socket('', self.palette['SIGNAL'])
 
@@ -26,8 +26,7 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
-
-        for i in range(int(arguments['От']), int(arguments['До'])+1,
+        for i in range(int(arguments['От']), int(arguments['До']) + 1,
                        int(arguments['Шаг'])):
             self.output_sockets['Тело Цикла'].set_value(None)
 
@@ -36,3 +35,7 @@ class Node(INode):
             self.output_sockets['Тело Цикла'].set_value(True)
 
         self.output_sockets['Завершение'].set_value(True)
+
+    @staticmethod
+    def create_info():
+        return Node, 'For Range', 'program'

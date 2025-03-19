@@ -116,7 +116,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         if self.active_tab:
             self.active_tab.canvas.grid(row=1, column=0, sticky='nsew', columnspan=2)
 
-    def add_node(self, node=INode, **kwargs):
+    def add_node(self, node, **kwargs):
         self.active_tab.add_node(node, **kwargs)
 
     def set_project(self, path):
@@ -436,7 +436,8 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         if self.first_socket.enter ^ self.second_socket.enter:
             if (self.first_socket.color == self.second_socket.color) or (
-                    self.first_socket.color == self.palette['ANY']) or (self.second_socket.color == self.palette['ANY']):
+                    self.first_socket.color == self.palette['ANY']) or (
+                    self.second_socket.color == self.palette['ANY']):
                 self.connect_wire()
 
     def are_sockets_connected(self, first, second):
@@ -458,7 +459,10 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         x = 300 + random.randint(-30, 30)
         y = 300 + random.randint(-30, 30)
-        node = node(self.config, self, self.canvas, self.palette, x, y, **kwargs)
+        spec = node.create_info()
+        print(spec)
+        node = node(self.config, self, self.canvas, self.palette, x, y, spec[1],
+                    spec[2], **kwargs)
         node.run()
 
         if len(self.nodes) > 0:

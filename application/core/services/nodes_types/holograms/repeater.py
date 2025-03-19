@@ -11,7 +11,7 @@ class Node(INode):
     def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
         super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
 
-        self.add_enter_socket('Заряд', self.palette['NUM'])
+        self.add_enter_socket('', self.palette['HOLOGRAM'])
         self.add_output_socket('', self.palette['HOLOGRAM'])
 
         self.widget_width = 200
@@ -27,22 +27,7 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
-        width = int(self.config['SLM']['WIDTH'])
-        height = int(self.config['SLM']['HEIGHT'])
-
-        x = np.linspace(-width / 2, width / 2, width)
-        y = np.linspace(-height / 2, height / 2, height)
-
-        x, y = np.meshgrid(x, y)
-
-        rho = np.sqrt(x ** 2 + y ** 2)
-
-        phi = np.arctan2(y, x)
-        phi = phi + np.min(phi)
-
-        phi = np.flip(phi, 1)
-
-        mask = Mask(phi * arguments['Заряд'])
+        mask = arguments['']
 
         self.mask_label.set_mask(mask)
 
@@ -50,5 +35,6 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Вихрь', 'hologram'
+        return Node, 'Повторитель', 'hologram'
+
 

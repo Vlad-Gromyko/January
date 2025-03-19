@@ -36,7 +36,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         #self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
         # self.event_bus.raise_event(Event('Canvas Add Node', value=Parameter))
-        self.event_bus.raise_event(Event('Canvas Add Node', value=NumNode))
+        #self.event_bus.raise_event(Event('Canvas Add Node', value=NumNode))
         #self.event_bus.raise_event(Event('Take Shot'))
 
 

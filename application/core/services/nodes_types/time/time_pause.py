@@ -11,8 +11,8 @@ import time
 
 
 class Node(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, **kwargs):
-        super().__init__(config, editor, canvas, palette, x, y, text='Пауза', theme='time', **kwargs)
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text, theme, **kwargs)
 
         self.add_enter_socket('', self.palette['SIGNAL'])
         self.add_output_socket('', self.palette['SIGNAL'])
@@ -26,3 +26,7 @@ class Node(INode):
         time.sleep(arguments['Сек.'])
 
         self.output_sockets[''].set_value(True)
+
+    @staticmethod
+    def create_info():
+        return Node, 'Пауза', 'program'

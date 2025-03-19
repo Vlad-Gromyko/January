@@ -22,3 +22,6 @@ class Node(INode):
 
         self.output_sockets[''].set_value(True)
 
+    @staticmethod
+    def create_info():
+        return Node, 'Вкл/Выкл SLM', 'slm'

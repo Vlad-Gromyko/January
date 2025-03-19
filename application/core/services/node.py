@@ -128,8 +128,10 @@ class INode(CanvasElement, Service):
 
         self.config = config
 
-        self.text = text
+        self.theme = theme
 
+        self.text = text
+        print('AAAAAAAAAAAAA', theme)
         self.color_back = config['NODES_CATEGORIES'][theme]
         self.widget_width = 0
         self.widget_height = 0
@@ -170,6 +172,12 @@ class INode(CanvasElement, Service):
         self.output_width = 0
 
         self.chosen_one = False
+
+
+    @staticmethod
+    @abstractmethod
+    def create_info():
+        return INode,
 
     def choose(self):
         self.chosen_one = True

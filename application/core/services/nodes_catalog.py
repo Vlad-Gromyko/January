@@ -32,6 +32,29 @@ class NodeCatalog(Service, ctk.CTkToplevel):
         self.visible = False
         self.attributes('-topmost', True)
 
+        self.notes = ctk.CTkTabview(self)
+        self.notes.grid()
+
+        self.themes = list()
+
+        self.scrolls = dict()
+
+    def add_node_spec(self, node):
+        spec = node.create_info()
+        if spec[2] not in self.themes:
+            self.notes.add(spec[2])
+            scroll = ctk.CTkScrollableFrame(self.notes.tab(spec[2]), orientation='vertical')
+            scroll.grid()
+            self.scrolls[spec[2]] = scroll
+
+            self.themes.append(spec[2])
+
+        ctk.CTkButton(self.scrolls[spec[2]], text=spec[1],
+                          command=lambda: self.apply_node(spec[0])).grid(padx=5, pady=5)
+
+    def apply_node(self, node):
+        self.event_bus.raise_event(Event('Canvas Add Node', node))
+
     def show_and_hide(self):
         if self.visible:
             self.withdraw()
@@ -50,7 +73,8 @@ class NodeCatalog(Service, ctk.CTkToplevel):
     def register_node(self, node):
         self.nodes.append(node)
 
-        self.event_bus.raise_event(Event('Canvas Add Node', value=node))
+        # self.event_bus.raise_event(Event('Canvas Add Node', value=node))
+        self.add_node_spec(node)
 
     def register_nodes_in_folder(self, dir_path):
         for dirpath, _, filenames in os.walk(dir_path):

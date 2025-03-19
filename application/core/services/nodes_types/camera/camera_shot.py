@@ -11,8 +11,8 @@ import time
 
 
 class Node(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, **kwargs):
-        super().__init__(config, editor, canvas, palette, x, y, text='Снимок', theme='time', **kwargs)
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
 
         self.add_enter_socket('Фон', self.palette['SIGNAL'])
         self.add_enter_socket('Снимок', self.palette['SIGNAL'])
@@ -41,3 +41,7 @@ class Node(INode):
         self.output_sockets['Снимок - Фон'].set_value(shot_back)
 
         self.output_sockets[''].set_value(True)
+
+    @staticmethod
+    def create_info():
+        return Node, 'Камера', 'camera'

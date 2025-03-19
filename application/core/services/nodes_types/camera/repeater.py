@@ -18,12 +18,12 @@ import LightPipes as lp
 
 
 class Node(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, **kwargs):
-        super().__init__(config, editor, canvas, palette, x, y, text='Повторитель (Снимок)', theme='time', **kwargs)
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
 
-        self.add_enter_socket('Снимок', self.palette['CAMERA_SHOT'])
+        self.add_enter_socket('', self.palette['CAMERA_SHOT'])
 
-        self.add_output_socket('Снимок', self.palette['CAMERA_SHOT'])
+        self.add_output_socket('', self.palette['CAMERA_SHOT'])
 
         self.widget_width = 300
         self.widget_height = 300
@@ -49,11 +49,15 @@ class Node(INode):
     def execute(self):
             arguments = self.get_func_inputs()
 
-            photo = arguments['Снимок']
+            photo = arguments['']
 
             self.ax.imshow(photo, cmap='hot')
 
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
 
-            self.output_sockets['Снимок'].set_value(arguments['Снимок'])
+            self.output_sockets[''].set_value(arguments['Снимок'])
+
+    @staticmethod
+    def create_info():
+        return Node, 'Повторитель', 'camera'

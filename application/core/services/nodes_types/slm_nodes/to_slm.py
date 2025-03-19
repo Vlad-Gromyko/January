@@ -9,8 +9,8 @@ from application.core.utility.mask import Mask
 
 
 class Node(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, **kwargs):
-        super().__init__(config, editor, canvas, palette, x, y, text='Вывести на SLM', theme='slm', **kwargs)
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text, theme, **kwargs)
 
         self.add_enter_socket('', self.palette['SIGNAL'])
         self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
@@ -24,3 +24,6 @@ class Node(INode):
 
         self.output_sockets[''].set_value(True)
 
+    @staticmethod
+    def create_info():
+        return Node, 'SLM', 'slm'

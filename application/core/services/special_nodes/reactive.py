@@ -36,9 +36,13 @@ class Parameter(INode):
 
         self.output_sockets[''].kick_value(value)
 
+    @staticmethod
+    def create_info():
+        return Parameter, 'Параметр', 'hologram'
+
 
 class NumNode(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, text='Число', theme='program', **kwargs):
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
         super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
 
         self.add_output_socket('', self.palette['NUM'])
@@ -61,3 +65,8 @@ class NumNode(INode):
             self.output_sockets[''].set_value(float(value))
         except ValueError:
             pass
+
+    @staticmethod
+    def create_info():
+        return NumNode, 'Число', 'hologram'
+

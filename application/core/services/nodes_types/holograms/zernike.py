@@ -11,8 +11,8 @@ import time
 
 
 class Node(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, **kwargs):
-        super().__init__(config, editor, canvas, palette, x, y, text='Цернике', theme='time', **kwargs)
+    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
 
         self.add_enter_socket('', self.palette['SIGNAL'])
         self.add_enter_socket('Амплитуда', self.palette['NUM'])
@@ -32,3 +32,7 @@ class Node(INode):
 
         self.output_sockets['Голограмма'].set_value(holo)
         self.output_sockets[''].set_value(True)
+
+    @staticmethod
+    def create_info():
+        return Node, 'Цернике', 'hologram'

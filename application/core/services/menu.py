@@ -37,10 +37,10 @@ class TopMenu(Service):
         traps_menu.add_command(label='Ловушки', command=lambda : self.show_callback('Traps'))
 
         nodes_menu = Menu(tearoff=0)
-        nodes_menu.add_checkbutton(label='Каталог Нод', command=lambda:self.show_callback('Nodes'))
+        nodes_menu.add_command(label='Каталог Нод', command=lambda:self.show_callback('Nodes'))
 
         holo_menu = Menu(tearoff=0)
-        holo_menu.add_checkbutton(label='Цернике', command=lambda:self.show_callback('Zernike'))
+        holo_menu.add_command(label='Цернике', command=lambda:self.show_callback('Zernike'))
 
         order_menu = Menu(tearoff=0)
         order_menu.add_command(label='Атлас', command=lambda:self.show_callback('Atlas'))
@@ -50,6 +50,7 @@ class TopMenu(Service):
         self.menu.add_cascade(label='SLM', menu=slm_menu)
         self.menu.add_cascade(label='Камера', menu=camera_menu)
         self.menu.add_cascade(label='Голограммы', menu=holo_menu)
+        self.menu.add_cascade(label='Ноды', menu=nodes_menu)
         self.menu.add_cascade(label='Очереди', menu=order_menu)
 
     def show_callback(self, name):
