@@ -10,13 +10,11 @@ from tkinterdnd2 import TkinterDnD, DND_ALL
 
 from application.core.services.node import INode
 from application.core.services.special_nodes.start import Start
-from application.core.services.special_nodes.reactive import Parameter
 
 from application.core.services.special_nodes.holo import HoloNode
 
 import os
 import configparser
-from numpy import sign
 
 
 class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):

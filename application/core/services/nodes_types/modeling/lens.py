@@ -52,7 +52,7 @@ class Node(INode):
 
     def execute(self):
         arguments = self.get_func_inputs()
-        print('leeeens')
+
         holo = self.holo_box(arguments['Голограмма'].get_array())
         if self.field is None:
             self.wave = float(self.config['LASER']['wavelength_NM']) * 10 ** (-9)

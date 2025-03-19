@@ -25,9 +25,6 @@ class HoloNode(INode):
         self.mask_label.grid(padx=5, pady=5)
 
 
-        self.enter_sockets[''].set_value(kwargs['mask'])
-
-
     def execute(self):
         arguments = self.get_func_inputs()
 
