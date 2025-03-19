@@ -39,7 +39,8 @@ class Zernike(Service, ctk.CTkToplevel):
 
         self.notebook.add('Ввод')
 
-        ctk.CTkButton(self.notebook.tab('Ввод'), text='Рассчет', command=self.calculate_hand).grid(row=0, column=0, padx=5, pady=5)
+        ctk.CTkButton(self.notebook.tab('Ввод'), text='Рассчет', command=self.calculate_hand).grid(row=0, column=0,
+                                                                                                   padx=5, pady=5)
         ctk.CTkButton(self.notebook.tab('Ввод'), text='Очистить', fg_color='#8B0000', command=self.clear).grid(row=0,
                                                                                                                column=1,
                                                                                                                padx=5,
@@ -94,6 +95,7 @@ class Zernike(Service, ctk.CTkToplevel):
         self.events_reactions['Show/Hide Service Zernike'] = lambda event: self.deiconify()
 
         self.visible = False
+        self.attributes('-topmost', True)
 
     def show_and_hide(self):
         if self.visible:
@@ -137,10 +139,10 @@ class Zernike(Service, ctk.CTkToplevel):
                                                           'text': 'Цернике'})))
 
         self.hand_total_label.menu.add_command(label='Добавить в Сумматор',
-                                   command=lambda: self.event_bus.raise_event(
-                                       Event('Add Combiner',
-                                             {'mask': self.hand_total_label.get_mask(), 'text': 'Цернике'})))
-
+                                               command=lambda: self.event_bus.raise_event(
+                                                   Event('Add Combiner',
+                                                         {'mask': self.hand_total_label.get_mask(),
+                                                          'text': 'Цернике'})))
 
         self.hand_total_label.menu.add_command(label='Добавить на Холст',
                                                command=lambda: self.event_bus.raise_event(
@@ -149,7 +151,6 @@ class Zernike(Service, ctk.CTkToplevel):
                                                           'text': 'Цернике'})))
 
         ####
-
 
         self.auto_total_label.menu.add_command(label='Добавить в Атлас',
                                                command=lambda: self.event_bus.raise_event(
@@ -185,6 +186,23 @@ class Zernike(Service, ctk.CTkToplevel):
         for k in self.names:
             self.zernike_masks.append(self.zernike(k[2], k[1]))
 
+        self.events_reactions['Calculate Zernike One'] = lambda event: self.calculate_one(event.get_value()['number'], event.get_value()['amplitude'])
+        self.fields['Last Zernike Mask'] = None
+
+    def calculate_one(self, number, amplitude):
+        array = np.zeros((self.slm_height, self.slm_width))
+        item = self.zernike_masks[int(number)]
+
+        array = array + item * amplitude
+
+        array = array % (2 * np.pi)
+
+        mask = Mask(array)
+        self.auto_total_label.set_mask(mask)
+        self.fields['Last Zernike Mask'] = mask
+
+        return array
+
     def calculate(self, weights):
         array = np.zeros((self.slm_height, self.slm_width))
 
@@ -195,7 +213,7 @@ class Zernike(Service, ctk.CTkToplevel):
 
             mask = Mask(array)
             self.auto_total_label.set_mask(mask)
-
+            self.fields['Last Zernike Mask'] = mask
         return array
 
     def calculate_hand(self):

@@ -22,7 +22,6 @@ class Node(INode):
                                                               height=self.widget_height)
 
         self.mask_label = MaskLabel(frame_widgets, Mask(np.zeros((1200, 1920))), size_scale=1 / 10)
-        print(self.mask_label.label.cget('width'), self.mask_label.cget('height'))
         self.mask_label.grid(padx=5, pady=5)
 
     def execute(self):

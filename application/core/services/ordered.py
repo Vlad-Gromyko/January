@@ -51,6 +51,7 @@ class Atlas(Service, ctk.CTkToplevel):
         self.events_reactions['Show/Hide Service Atlas'] = lambda event: self.deiconify()
 
         self.visible = False
+        self.attributes('-topmost', True)
 
     def show_and_hide(self):
         if self.visible:

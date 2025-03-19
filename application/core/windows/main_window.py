@@ -19,8 +19,8 @@ class MainWindow(Service, ctk.CTk):
         width = self.winfo_screenwidth()
         height = self.winfo_screenheight()
         self.geometry(f'{width}x{height}+0+0')
-        self.state('zoomed')
-        self.withdraw()
+        #self.state('zoomed')
+        # self.withdraw()
 
         self.events_reactions['Project Loaded'] = lambda event: self.deiconify()
         self.events_reactions['Load'] = lambda event: self.title(f'Hyperion  {event.get_value().split('/')[-1]}')

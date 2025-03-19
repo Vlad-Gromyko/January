@@ -189,13 +189,24 @@ class INode(CanvasElement, Service):
 
     def try_execute(self):
         go = True
+        white_go = False
+        whites = []
 
         for item in self.enter_sockets.values():
 
-            if item.get_value() is None:
+            if item.get_value() is None and item.color != self.palette['SIGNAL']:
                 go = False
 
-        if go:
+            if item.color == self.palette['SIGNAL']:
+                whites.append(item.get_value())
+
+        #print('WHITES', whites, go)
+        if any(whites) or len(whites) == 0:
+            white_go = True
+            #print('GGG')
+
+        if go and white_go:
+            #print('execute')
             self.choose()
             self.execute()
             self.no_choose()

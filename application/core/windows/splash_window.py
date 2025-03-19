@@ -22,8 +22,11 @@ class SplashWindow(Service, ctk.CTkToplevel):
 
         self.withdraw()
         self.overrideredirect(1)
+        self.attributes('-topmost', True)
+
 
     def show_splash(self):
+
         self.deiconify()
         self.update()
 

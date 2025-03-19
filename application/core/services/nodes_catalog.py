@@ -30,6 +30,7 @@ class NodeCatalog(Service, ctk.CTkToplevel):
         self.events_reactions['Show/Hide Service Nodes'] = lambda event: self.deiconify()
 
         self.visible = False
+        self.attributes('-topmost', True)
 
     def show_and_hide(self):
         if self.visible:

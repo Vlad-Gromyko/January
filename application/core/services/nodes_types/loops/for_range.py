@@ -32,6 +32,7 @@ class Node(INode):
             self.output_sockets['Тело Цикла'].set_value(None)
 
             self.output_sockets['Индекс'].set_value(i)
+
             self.output_sockets['Тело Цикла'].set_value(True)
 
         self.output_sockets['Завершение'].set_value(True)

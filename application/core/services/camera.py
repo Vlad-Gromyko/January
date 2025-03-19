@@ -73,6 +73,8 @@ class Camera(Service, ctk.CTkToplevel):
 
         self.visible = False
 
+        self.attributes('-topmost', True)
+
     def show_and_hide(self):
         if self.visible:
             self.withdraw()
@@ -145,3 +147,7 @@ class Camera(Service, ctk.CTkToplevel):
 
         y, x = np.shape(self.clear)
         self.label_clear.configure(image=ctk.CTkImage(light_image=Image.fromarray(self.clear), size=(x // 2, y // 2)))
+
+        self.fields['Back'] = self.back
+        self.fields['Shot'] = self.last_shot
+        self.fields['Shot - Back'] = self.clear

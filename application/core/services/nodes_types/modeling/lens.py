@@ -1,0 +1,83 @@
+import customtkinter as ctk
+import matplotlib.pyplot as plt
+import numpy as np
+
+from application.core.events import Event
+from application.core.services.node import INode
+from application.widgets.maskwidget import MaskLabel
+
+from application.core.utility.mask import Mask
+
+import time
+
+import LightPipes as lp
+
+
+class Node(INode):
+    def __init__(self, config, editor, canvas, palette, x, y, **kwargs):
+        super().__init__(config, editor, canvas, palette, x, y, text='Линза', theme='time', **kwargs)
+
+        self.add_enter_socket('', self.palette['SIGNAL'])
+
+        self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
+
+        self.add_output_socket('', self.palette['SIGNAL'])
+        self.add_output_socket('Интенсивность', self.palette['CAMERA_SHOT'])
+
+        self.field = None
+        self.wave = None
+        self.focus = None
+        self.gauss_waist = None
+
+        self.slm_grid_size = None
+        self.slm_grid_dim = None
+
+        self.camera_grid_size = None
+        self.camera_grid_dim = None
+
+    @staticmethod
+    def holo_box(holo):
+        rows, cols = holo.shape
+
+        size = max(rows, cols)
+
+        square_array = np.zeros((size, size), dtype=holo.dtype)
+
+        row_offset = (size - rows) // 2
+        col_offset = (size - cols) // 2
+
+        square_array[row_offset:row_offset + rows, col_offset:col_offset + cols] = holo
+
+        return square_array
+
+    def execute(self):
+        arguments = self.get_func_inputs()
+        print('leeeens')
+        holo = self.holo_box(arguments['Голограмма'].get_array())
+        if self.field is None:
+            self.wave = float(self.config['LASER']['wavelength_NM']) * 10 ** (-9)
+            self.gauss_waist = float(self.config['LASER']['waist_mm']) * 10 ** (-3)
+            self.focus = float(self.config['LENS']['Focus_MM']) * 10 ** (-3)
+
+            self.slm_grid_dim = int(self.config['SLM']['WIDTH'])
+            self.slm_grid_size = self.slm_grid_dim * float(self.config['SLM']['PIXEL_IN_UM']) * 10 ** (-6)
+
+            self.field = lp.Begin(self.slm_grid_size, self.wave,
+                                  self.slm_grid_dim)
+
+            self.field = lp.GaussBeam(self.field, self.gauss_waist)
+
+            self.camera_grid_dim = int(self.config['CAMERA']['modeling_width'])
+            self.camera_grid_size = self.camera_grid_dim * float(self.config['CAMERA']['modeling_pixel_UM']) * 10 ** (
+                -6)
+
+        field = lp.SubPhase(self.field, holo)
+        field = lp.Lens(field, self.focus)
+        field = lp.Forvard(field, self.focus)
+
+        field = lp.Interpol(field, self.camera_grid_size,
+                            self.camera_grid_dim)
+        result = lp.Intensity(field)
+
+        self.output_sockets['Интенсивность'].set_value(result)
+        self.output_sockets[''].set_value(True)
