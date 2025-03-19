@@ -1,19 +1,4 @@
-import customtkinter as ctk
-import tkinter
-from tkinter.simpledialog import askstring
-from tkinter.messagebox import showwarning
-
-from application.core.windows.code_window import CodeShow
-
-from application.core.events import Service, Event
-from tkinterdnd2 import TkinterDnD, DND_ALL
-
-import os
-
-from abc import abstractmethod
-
-import inspect
-from application.core.services.node import INode
+from application.core.services.nodes.node import INode
 
 class Start(INode):
     def __init__(self,config, editor, canvas, palette, x, y, text, theme):
@@ -45,4 +30,4 @@ class Start(INode):
 
     @staticmethod
     def create_info():
-        return Start, 'Старт', 'hologram'
+        return Start, 'Старт', 'program'

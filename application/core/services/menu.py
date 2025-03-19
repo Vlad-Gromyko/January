@@ -52,6 +52,7 @@ class TopMenu(Service):
         self.menu.add_cascade(label='Голограммы', menu=holo_menu)
         self.menu.add_cascade(label='Ноды', menu=nodes_menu)
         self.menu.add_cascade(label='Очереди', menu=order_menu)
+        self.menu.add_cascade(label='Ловушки', menu=traps_menu)
 
     def show_callback(self, name):
             self.event_bus.raise_event(Event('Show/Hide Service ' + name))

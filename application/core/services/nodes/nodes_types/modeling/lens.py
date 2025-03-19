@@ -1,14 +1,6 @@
-import customtkinter as ctk
-import matplotlib.pyplot as plt
 import numpy as np
 
-from application.core.events import Event
-from application.core.services.node import INode
-from application.widgets.maskwidget import MaskLabel
-
-from application.core.utility.mask import Mask
-
-import time
+from application.core.services.nodes.node import INode
 
 import LightPipes as lp
 

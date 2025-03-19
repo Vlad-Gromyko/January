@@ -8,10 +8,8 @@ import random
 from application.core.events import Service, Event
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
-from application.core.services.node import INode
-from application.core.services.special_nodes.start import Start
+from application.core.services.nodes.special_nodes.start import Start
 
-from application.core.services.special_nodes.holo import HoloNode
 
 import os
 import configparser
@@ -460,7 +458,7 @@ class CanvasTab(Service, ctk.CTkFrame):
         x = 300 + random.randint(-30, 30)
         y = 300 + random.randint(-30, 30)
         spec = node.create_info()
-        print(spec)
+
         node = node(self.config, self, self.canvas, self.palette, x, y, spec[1],
                     spec[2], **kwargs)
         node.run()

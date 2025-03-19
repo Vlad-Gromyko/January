@@ -131,7 +131,7 @@ class INode(CanvasElement, Service):
         self.theme = theme
 
         self.text = text
-        print('AAAAAAAAAAAAA', theme)
+
         self.color_back = config['NODES_CATEGORIES'][theme]
         self.widget_width = 0
         self.widget_height = 0

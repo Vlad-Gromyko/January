@@ -67,7 +67,7 @@ class NodeCatalog(Service, ctk.CTkToplevel):
         self.withdraw()
 
     def set_project(self, path):
-        path = 'application/core/services/nodes_types'
+        path = 'application/core/services/nodes/nodes_types'
         self.register_nodes_in_folder(path)
 
     def register_node(self, node):

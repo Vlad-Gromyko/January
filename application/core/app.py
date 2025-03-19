@@ -1,14 +1,11 @@
-import customtkinter as ctk
-
 from application.core.events import EventBus
 
 from application.core.windows.main_window import MainWindow
 from application.core.windows.project_window import ProjectWindow
 from application.core.windows.splash_window import SplashWindow
 
-from application.core.services.nodes import NodeEditor
-from application.core.services.nodes_catalog import NodeCatalog
-from application.core.services.status import StatusBar
+from application.core.services.nodes.nodes import NodeEditor
+from application.core.services.nodes.nodes_catalog import NodeCatalog
 from application.core.services.menu import TopMenu
 from application.core.services.ordered import Atlas, Combiner
 from application.core.services.slm import SLM

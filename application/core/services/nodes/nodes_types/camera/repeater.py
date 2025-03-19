@@ -1,20 +1,9 @@
 import customtkinter as ctk
-import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
-NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
+import matplotlib.pyplot as plt
 
-from application.core.events import Event
-from application.core.services.node import INode
-from application.widgets.maskwidget import MaskLabel
-
-from application.core.utility.mask import Mask
-
-import time
-
-import LightPipes as lp
+from application.core.services.nodes.node import INode
 
 
 class Node(INode):
@@ -56,7 +45,7 @@ class Node(INode):
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
 
-            self.output_sockets[''].set_value(arguments['Снимок'])
+            self.output_sockets[''].set_value(arguments[''])
 
     @staticmethod
     def create_info():
