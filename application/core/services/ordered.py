@@ -82,7 +82,7 @@ class Atlas(Service, ctk.CTkToplevel):
         self.configure(fg_color='#32CD32')
 
     def drop_end(self):
-        self.configure(fg_color=self.fg_color)
+        pass
 
     def load_file(self):
         files = fd.askopenfilenames(title="Загрузить голограмму", defaultextension=".bmp",
