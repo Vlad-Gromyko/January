@@ -23,4 +23,4 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Range', 'math'
+        return Node, 'Range', 'container'
