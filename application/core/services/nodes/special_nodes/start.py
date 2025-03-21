@@ -1,8 +1,8 @@
 from application.core.services.nodes.node import INode
 
 class Start(INode):
-    def __init__(self,config, editor, canvas, palette, x, y, text, theme):
-        super().__init__(config,editor, canvas, palette, x, y, text,theme)
+    def __init__(self,config, editor, canvas, x, y, text, theme):
+        super().__init__(config,editor, canvas, x, y, text,theme)
 
         self.label.configure(fg_color='#FFF')
         self.label.configure(text_color='#000')

@@ -8,8 +8,8 @@ from application.core.utility.mask import Mask
 
 
 class Node(INode):
-    def __init__(self, config, editor, canvas, palette, x, y, text, theme, **kwargs):
-        super().__init__(config, editor, canvas, palette, x, y, text=text, theme=theme, **kwargs)
+    def __init__(self, config, editor, canvas, x, y, text, theme, **kwargs):
+        super().__init__(config, editor, canvas, x, y, text=text, theme=theme, **kwargs)
 
         self.add_enter_socket('Заряд', self.palette['NUM'])
         self.add_output_socket('', self.palette['HOLOGRAM'])

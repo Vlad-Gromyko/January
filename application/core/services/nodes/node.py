@@ -120,11 +120,11 @@ class Socket(CanvasElement):
 
 
 class INode(CanvasElement, Service):
-    def __init__(self, config, editor, canvas, palette, x, y, text='Node', theme='program', **kwargs):
+    def __init__(self, config, editor, canvas, x, y, text='Node', theme='program', **kwargs):
         CanvasElement.__init__(self, editor, canvas, x, y)
         Service.__init__(self)
 
-        self.palette = palette
+        self.palette = config['NODES_TYPES']
 
         self.config = config
 
@@ -181,7 +181,7 @@ class INode(CanvasElement, Service):
 
     def choose(self):
         self.chosen_one = True
-        self.label.configure(fg_color='#4682B4')
+        self.label.configure(fg_color='#A9A9A9')
 
     def no_choose(self):
         self.chosen_one = False

@@ -51,10 +51,8 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.events_reactions['Canvas Ask Rename'] = lambda event: self.rename_canvas(event.get_value())
 
         self.events_reactions['Canvas Add Node'] = lambda event: self.add_node(event.get_value())
-        self.events_reactions['Add Node Holo'] = lambda event: self.add_node(HoloNode, mask=event.get_value()['mask'])
 
         self.config = None
-        self.palette = dict()
 
     def start_execute(self):
         self.active_tab.start_execute()
@@ -87,7 +85,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                 showwarning(message="Холст с названием " + ask + ' уже существует')
 
     def add_canvas(self, name):
-        tab = CanvasTab(self, name, self.config, self.palette)
+        tab = CanvasTab(self, name, self.config)
 
         self.event_bus.add_service(tab)
 
@@ -123,15 +121,6 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         canvases_folder = path + '/canvases'
 
         folders = os.listdir(canvases_folder)
-
-        self.palette['SIGNAL'] = self.config['NODES_TYPES']['signal']
-        self.palette['BOOL'] = self.config['NODES_TYPES']['bool']
-        self.palette['NUM'] = self.config['NODES_TYPES']['num']
-        self.palette['NUM_LIST'] = self.config['NODES_TYPES']['num_list']
-        self.palette['HOLOGRAM'] = self.config['NODES_TYPES']['hologram']
-        self.palette['HOLOGRAM_LIST'] = self.config['NODES_TYPES']['hologram_list']
-        self.palette['CAMERA_SHOT'] = self.config['NODES_TYPES']['camera_shot']
-        self.palette['ANY'] = self.config['NODES_TYPES']['any']
 
         if len(folders) == 0:
             self.add_canvas('Новый Холст')
@@ -220,14 +209,14 @@ class Wire:
 
 
 class CanvasTab(Service, ctk.CTkFrame):
-    def __init__(self, master, name, config, palette):
+    def __init__(self, master, name, config):
         Service.__init__(self)
         ctk.CTkFrame.__init__(self, master.scroll)
         self.name = name
 
         self.config = config
 
-        self.palette = palette
+        self.palette = config['NODES_TYPES']
 
         self.canvas_place = master
 
@@ -459,7 +448,7 @@ class CanvasTab(Service, ctk.CTkFrame):
         y = 300 + random.randint(-30, 30)
         spec = node.create_info()
 
-        node = node(self.config, self, self.canvas, self.palette, x, y, spec[1],
+        node = node(self.config, self, self.canvas, x, y, spec[1],
                     spec[2], **kwargs)
         node.run()
 
