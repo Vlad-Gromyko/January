@@ -1,9 +1,11 @@
 import customtkinter as ctk
 from tkinter import filedialog
 from application.core.events import Service, Event
-import  configparser
+import configparser
 import numpy as np
 import os
+from application.core.services.nodes.nodes_types.start import Node
+
 
 class ProjectWindow(Service, ctk.CTkToplevel):
     def __init__(self):
@@ -106,7 +108,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
             'HEIGHT': self.height.get(),
             'GRAY': self.gray.get(),
             'MONITOR': self.monitor.get(),
-            'PIXEL_IN_UM':self.slm_pixel.get(),
+            'PIXEL_IN_UM': self.slm_pixel.get(),
         }
 
         config['NODES_CATEGORIES'] = {
@@ -146,15 +148,15 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         self.event_bus.raise_event(Event('Load', value=path))
 
-
+        self.event_bus.raise_event(Event('Canvas Add Node', Node))
         self.event_bus.raise_event(Event('Project Loaded'))
 
         ar = np.zeros((1200, 1920))
 
-        #self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
+        # self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
         # self.event_bus.raise_event(Event('Canvas Add Node', value=Parameter))
-        #self.event_bus.raise_event(Event('Canvas Add Node', value=NumNode))
-        #self.event_bus.raise_event(Event('Take Shot'))
+        # self.event_bus.raise_event(Event('Canvas Add Node', value=NumNode))
+        # self.event_bus.raise_event(Event('Take Shot'))
 
     def open_project(self):
         ask = filedialog.askdirectory()
@@ -177,9 +179,6 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         with open(path + '/field.ini', 'w') as configfile:
             config.write(configfile)
-
-
-
 
     def start_service(self, event):
         pass

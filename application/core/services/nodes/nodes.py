@@ -3,17 +3,14 @@ import tkinter
 from tkinter.simpledialog import askstring
 from tkinter.messagebox import showwarning
 
-import random
-
 from application.core.events import Service, Event
 from tkinterdnd2 import TkinterDnD, DND_ALL
-
-from application.core.services.nodes.special_nodes.start import Start
 
 import os
 import configparser
 import pickle
-
+import importlib
+from pathlib import Path
 
 class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
     def __init__(self, master):
@@ -98,7 +95,6 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
         self.grid_tabs()
 
-        self.add_node(Start)
 
     def grid_forget_tabs(self):
         for item in self.tabs.values():
@@ -112,18 +108,51 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         if self.active_tab:
             self.active_tab.canvas.grid(row=1, column=0, sticky='nsew', columnspan=2)
 
-    def add_node(self, node, **kwargs):
-        self.active_tab.add_node(node, **kwargs)
+    def add_node(self, node, x=300, y=300, **kwargs):
+        self.active_tab.add_node(node, x, y, **kwargs)
 
     def set_project(self, path):
         self.config = configparser.ConfigParser()
         self.config.read(path + '/field.ini')
-        canvases_folder = path + '/canvases'
+        canvases_folder = path + '/canvases/'
 
         folders = os.listdir(canvases_folder)
 
         if len(folders) == 0:
             self.add_canvas('Новый Холст')
+        else:
+            items = os.listdir(canvases_folder)
+
+            for folder in items:
+
+                self.load_canvas(path + '/canvases/' + folder)
+
+    def load_canvas(self, dir_path):
+        self.add_canvas(dir_path.split('/')[-1])
+        for dirpath, _, filenames in os.walk(dir_path):
+            for f in filenames:
+
+                with open(dir_path + '/' + f, 'rb') as file:
+                    loaded_path, loaded_x, loaded_y, loaded_kwargs = pickle.load(file)
+
+                file = str(Path(__file__).parent)
+
+                node = self.dynamic_import(Path(file + '/' + str(loaded_path)))
+                self.add_node(node, loaded_x, loaded_y, **loaded_kwargs)
+
+    def dynamic_import(self, path):
+        module = self.import_module_from_path(path)
+        node = module.Node
+        return node
+
+    def import_module_from_path(self, path: str):
+        file_path = path
+
+        spec = importlib.util.spec_from_file_location(f'nodes__{0}', file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        return module
 
     def validate_name(self, name: str):
         return not (name in self.tabs.keys())
@@ -297,23 +326,23 @@ class CanvasTab(Service, ctk.CTkFrame):
             spec = node.prepare_save_spec()
 
             with open(f'{path + '/canvases' + '/' + self.name + '/' + str(counter)}.pkl', 'wb') as f:
-                pickle.dump((self.get_relative_path_from_folder(spec[0], 'nodes_types'), spec[1]), f)
+                pickle.dump((self.get_relative_path_from_folder(spec[0], 'nodes_types'), spec[1], spec[2], spec[3]), f)
 
     @staticmethod
     def get_relative_path_from_folder(abs_path, target_folder):
-        parts = abs_path.split(os.sep)
+        print(abs_path)
+        print(target_folder)
+        parts = list(Path(abs_path).parts)
+        base_index = parts.index(target_folder)
 
-        if target_folder in parts:
-            index = parts.index(target_folder)
+        new_path = Path(*parts[base_index:])
 
-            return os.sep.join(parts[index:])
-
-        return None
+        return new_path
 
     def start_execute(self):
         for node in self.nodes:
             node.no_choose()
-            if isinstance(node, Start):
+            if node.text == 'Старт':
                 node.execute()
 
     def show_color_scheme(self):
@@ -469,10 +498,8 @@ class CanvasTab(Service, ctk.CTkFrame):
             node = self.socket_output_to_node_IDs[tag]
             return node.output_sockets_ovals[tag]
 
-    def add_node(self, node, **kwargs):
+    def add_node(self, node, x=300, y=300, **kwargs):
 
-        x = 300 + random.randint(-30, 30)
-        y = 300 + random.randint(-30, 30)
         spec = node.create_info()
 
         node = node(self.supreme_leader_node, self.config, self, self.canvas, x, y, spec[1],
