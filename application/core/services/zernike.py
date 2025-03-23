@@ -119,15 +119,15 @@ class Zernike(Service, ctk.CTkToplevel):
             entry.insert(0, '0')
 
     def set_project(self, path):
-        slm_folder = path + '/slm'
+        folder = path
         config = configparser.ConfigParser()
-        config.read(slm_folder + '/slm.ini')
-        slm_name = config.sections()[0]
+        config.read(folder + '/field.ini')
 
-        self.slm_width = int(config[slm_name]['WIDTH'])
-        self.slm_height = int(config[slm_name]['HEIGHT'])
 
-        self.pixel_in_um = int(config[slm_name]['PIXEL_IN_UM'])
+        self.slm_width = int(config['SLM']['WIDTH'])
+        self.slm_height = int(config['SLM']['HEIGHT'])
+
+        self.pixel_in_um = int(config['SLM']['PIXEL_IN_UM'])
 
         self.hand_total_label.set_mask(Mask(np.zeros((self.slm_height, self.slm_width))))
         self.auto_total_label.set_mask(Mask(np.zeros((self.slm_height, self.slm_width))))

@@ -14,17 +14,15 @@ from application.widgets.maskwidget import MaskLabel
 
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
+
 class Atlas(Service, ctk.CTkToplevel):
     def __init__(self, master):
         Service.__init__(self)
         ctk.CTkToplevel.__init__(self, master)
-        self.name = 'Atlas'
+        self.name = 'atlas'
         self.title(self.name)
 
         self.cages = []
-
-
-
 
         self.left_frame = ctk.CTkFrame(self)
         self.left_frame.grid(row=0, column=0, padx=5, pady=5)
@@ -72,12 +70,12 @@ class Atlas(Service, ctk.CTkToplevel):
             array = np.load(dropped_file)
             self.add_cage(Mask(array), file)
         if mode == 'bmp':
-            array = np.asarray(Image.open(dropped_file))/255 * 2 * np.pi
+            array = np.asarray(Image.open(dropped_file)) / 255 * 2 * np.pi
             self.add_cage(Mask(array), file)
         self.drop_end()
 
     def drop_start(self):
-        self.fg_color=self.cget('fg_color')
+        self.fg_color = self.cget('fg_color')
 
         self.configure(fg_color='#32CD32')
 
@@ -86,7 +84,7 @@ class Atlas(Service, ctk.CTkToplevel):
 
     def load_file(self):
         files = fd.askopenfilenames(title="Загрузить голограмму", defaultextension=".bmp",
-                                    filetypes=[('Numpy', '*.npy'), ('BitMap', '*.bmp*')],)
+                                    filetypes=[('Numpy', '*.npy'), ('BitMap', '*.bmp*')], )
 
         if files != '':
             for file in files:
@@ -95,12 +93,10 @@ class Atlas(Service, ctk.CTkToplevel):
                     self.add_cage(Mask(array), text=file.split('/')[-1], trigger=False)
 
                 if file.split('.')[-1] == 'bmp':
-                    array = np.asarray(Image.open(file))/255 * 2 * np.pi
+                    array = np.asarray(Image.open(file)) / 255 * 2 * np.pi
                     self.add_cage(Mask(array), text=file.split('/')[-1], trigger=False)
 
             self.event_bus.raise_event(Event(self.name + ' Changed', self.cages))
-
-
 
     def add_cage(self, mask: Mask, text, trigger=True):
         counter = len(self.cages)
@@ -187,21 +183,26 @@ class Atlas(Service, ctk.CTkToplevel):
         self.event_bus.raise_event(Event(self.name + ' Changed', self.cages))
 
     def set_project(self, path):
-        slm_folder = path + '/slm'
-        config = configparser.ConfigParser()
-        config.read(slm_folder + '/slm.ini')
-        slm_name = config.sections()[0]
-
-        slm_width = int(config[slm_name]['WIDTH'])
-        slm_height = int(config[slm_name]['HEIGHT'])
 
         acc_folder = path + '/atlas'
 
         holos = os.listdir(acc_folder)
 
         for item in holos:
-            array = np.load(item)
+            array = np.load(acc_folder + '/' + item)
             self.add_cage(Mask(array), '', False)
+
+    def save_project(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+        if not os.path.exists(path + '/' + self.name):
+            os.mkdir(path + '/' + self.name)
+
+        for counter, item in enumerate(self.cages):
+            array = item.mask.get_mask().get_array()
+            np.save(path+'/' + self.name + '/' + str(counter), array)
+
+
 
 
 class Cage(ctk.CTkFrame):
@@ -233,7 +234,7 @@ class Combiner(Atlas):
     def __init__(self, master):
         super().__init__(master)
 
-        self.name = 'Combiner'
+        self.name = 'accumulator'
         self.title(self.name)
 
         self.left_frame.grid(row=0, column=1, padx=5, pady=5)
@@ -271,19 +272,15 @@ class Combiner(Atlas):
         self.events_reactions['Add Combiner'] = lambda event: self.add_cage(event.get_value()['mask'],
                                                                             event.get_value()['text'])
 
-
         self.events_reactions.pop('Show/Hide Service Atlas')
         self.events_reactions['Show/Hide Service Combiner'] = lambda event: self.deiconify()
 
-
     def set_project(self, path):
-        slm_folder = path + '/slm'
         config = configparser.ConfigParser()
-        config.read(slm_folder + '/slm.ini')
-        slm_name = config.sections()[0]
+        config.read(path + '/field.ini')
 
-        slm_width = int(config[slm_name]['WIDTH'])
-        slm_height = int(config[slm_name]['HEIGHT'])
+        slm_width = int(config['SLM']['WIDTH'])
+        slm_height = int(config['SLM']['HEIGHT'])
 
         acc_folder = path + '/accumulator'
 
@@ -292,10 +289,10 @@ class Combiner(Atlas):
         self.compose_label.set_mask(Mask(np.zeros((slm_height, slm_width))))
 
         for item in holos:
-            array = np.load(item)
-            self.add_cage(Mask(array),'', False)
+            array = np.load(acc_folder + '/' + item)
+            self.add_cage(Mask(array), '', False)
 
-    def add_cage(self, mask:Mask, text, trigger=True):
+    def add_cage(self, mask: Mask, text, trigger=True):
         super().add_cage(mask, text, trigger)
         self.sum_masks()
 

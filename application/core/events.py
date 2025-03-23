@@ -30,6 +30,7 @@ class Service(ABC, TkinterDnD.DnDWrapper):
         self.events_reactions['Load'] = lambda event: self.set_project(event.get_value())
         self.events_reactions['Drop Start'] = lambda event: self.drop_start()
         self.events_reactions['Drop End'] = lambda event: self.drop_end()
+        self.events_reactions['Save Project'] = lambda event: self.save_project(event.get_value())
 
         self.fields = {}
 
@@ -49,10 +50,14 @@ class Service(ABC, TkinterDnD.DnDWrapper):
         if event.get_name() in self.events_reactions.keys():
             self.events_reactions[event.get_name()](event)
 
+    def save_project(self, path):
+        pass
+
 
 class EventBus:
     def __init__(self):
         self.services = []
+        self.project_path = None
 
     def start(self):
         for service_name in self.services:
@@ -77,6 +82,9 @@ class EventBus:
         return answer
 
     def raise_event(self, event: Event):
+        if event.get_name() == 'Load':
+            self.project_path = event.get_value()
+
         print(event.get_name())
         answer = []
         for service_name in self.services:

@@ -120,10 +120,10 @@ class Socket(CanvasElement):
 
 
 class INode(CanvasElement, Service):
-    def __init__(self, config, editor, canvas, x, y, text='Node', theme='program', **kwargs):
+    def __init__(self,special_id, config, editor, canvas, x, y, text='Node', theme='program', **kwargs):
         CanvasElement.__init__(self, editor, canvas, x, y)
         Service.__init__(self)
-
+        self.special_id = special_id
         self.palette = config['NODES_TYPES']
 
         self.config = config

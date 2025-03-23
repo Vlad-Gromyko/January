@@ -10,21 +10,24 @@ class Node(INode):
 
         self.add_enter_socket('Вектор', self.palette['vector1d'])
         self.add_enter_socket('Индекс', self.palette['NUM'])
+        self.add_enter_socket('"Элемент"', self.palette['ANY'])
 
 
-        self.add_output_socket('Объект', self.palette['ANY'])
+        self.add_output_socket('Вектор', self.palette['vector1d'])
 
     def execute(self):
         arguments = self.get_func_inputs()
 
         index = int(arguments['Индекс'])
         container = arguments['Вектор']
+        element = arguments['Элемент']
+        container[index] = element
 
-        self.output_sockets['Объект'].set_value(container[index])
+        self.output_sockets['Вектор'].set_value(container)
 
     @staticmethod
     def create_info():
-        return Node, 'Элемент Вектора', 'container'
+        return Node, 'Обновить Элемент', 'container'
 
     def prepare_save_spec(self):
         return __file__, self.x, self.y, {}

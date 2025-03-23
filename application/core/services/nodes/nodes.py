@@ -10,9 +10,9 @@ from tkinterdnd2 import TkinterDnD, DND_ALL
 
 from application.core.services.nodes.special_nodes.start import Start
 
-
 import os
 import configparser
+import pickle
 
 
 class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
@@ -283,6 +283,33 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         self.drop_target_register(DND_ALL)
 
+        self.supreme_leader_node = 0
+
+    def save_project(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+        if not os.path.exists(path + '/canvases'):
+            os.mkdir(path + '/canvases')
+        if not os.path.exists(path + '/canvases' + '/' + self.name):
+            os.mkdir(path + '/canvases' + '/' + self.name)
+
+        for counter, node in enumerate(self.nodes):
+            spec = node.prepare_save_spec()
+
+            with open(f'{path + '/canvases' + '/' + self.name + '/' + str(counter)}.pkl', 'wb') as f:
+                pickle.dump((self.get_relative_path_from_folder(spec[0], 'nodes_types'), spec[1]), f)
+
+    @staticmethod
+    def get_relative_path_from_folder(abs_path, target_folder):
+        parts = abs_path.split(os.sep)
+
+        if target_folder in parts:
+            index = parts.index(target_folder)
+
+            return os.sep.join(parts[index:])
+
+        return None
+
     def start_execute(self):
         for node in self.nodes:
             node.no_choose()
@@ -448,7 +475,7 @@ class CanvasTab(Service, ctk.CTkFrame):
         y = 300 + random.randint(-30, 30)
         spec = node.create_info()
 
-        node = node(self.config, self, self.canvas, x, y, spec[1],
+        node = node(self.supreme_leader_node, self.config, self, self.canvas, x, y, spec[1],
                     spec[2], **kwargs)
         node.run()
 
@@ -460,6 +487,8 @@ class CanvasTab(Service, ctk.CTkFrame):
         self.event_bus.add_service(node)
 
         self.nodes.append(node)
+
+        self.supreme_leader_node += 1
 
     def it_is_me(self, name):
         self.button_name.configure(fg_color='#FFF')
