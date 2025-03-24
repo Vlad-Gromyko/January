@@ -40,4 +40,4 @@ class Node(INode):
     def create_info():
         return Node, 'A ~ B', 'math'
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}
+        return __file__, self.x, self.y, {}, self.special_id

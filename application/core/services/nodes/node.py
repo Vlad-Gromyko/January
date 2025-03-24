@@ -53,6 +53,9 @@ class Socket(CanvasElement):
         self.text = text
         self.color = color
 
+        self.node_socket_name = f'{node.special_id} {self.name}'
+        self.node_socket_name = self.node_socket_name + ' enter' if enter else self.node_socket_name + ' output'
+
         flag_anchor = ctk.NW if enter else ctk.NE
 
         x_oval = x if enter else x - 15
