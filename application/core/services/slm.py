@@ -38,7 +38,7 @@ class SLM(Service, ctk.CTkToplevel):
         self.masks = {}
 
         self.masks['total'] = MaskLabel(t1, size_scale=1 / 8)
-        self.masks['total'].grid(row=0, column=0, padx=5, pady=5)
+        self.masks['total'].grid(row=0, column=0, padx=5, pady=5, columnspan=3)
 
         self.masks['holo'] = MaskLabel(t2, size_scale=1 / 8)
         self.masks['holo'].grid(row=0, column=0, padx=5, pady=5)
@@ -101,6 +101,16 @@ class SLM(Service, ctk.CTkToplevel):
 
         self.visible = False
         self.attributes('-topmost', True)
+
+        self.check_vars.append(ctk.StringVar(value="off"))
+        self.checks.append(ctk.CTkCheckBox(t1, text="\u2194",
+                                           variable=self.check_vars[5], onvalue="on", offvalue="off", command=self.redraw_slm))
+        self.checks[5].grid(row=1, column=1, padx=5, pady=5, sticky='ew')
+
+        self.check_vars.append(ctk.StringVar(value="off"))
+        self.checks.append(ctk.CTkCheckBox(t1, text="\u2195",
+                                           variable=self.check_vars[6], onvalue="on", offvalue="off", command=self.redraw_slm))
+        self.checks[6].grid(row=1, column=2, padx=5, pady=5, sticky='ew')
 
     def save_project(self, path):
         if not os.path.exists(path):
@@ -170,6 +180,10 @@ class SLM(Service, ctk.CTkToplevel):
 
         if len(arrays) != 0:
             array = np.sum(arrays, axis=0)
+            if self.checks[5].get() == 'on':
+                array = np.fliplr(array)
+            if self.checks[6].get() == 'on':
+                array = np.flipud(array)
             self.masks['total'].set_mask(Mask(array))
             self.event_bus.raise_event(Event('SLM Changed'))
 
