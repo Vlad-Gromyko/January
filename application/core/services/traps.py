@@ -8,6 +8,7 @@ import screeninfo
 import cv2
 from PIL import Image
 import matplotlib.pyplot as plt
+from fontTools.t1Lib import write
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import os
 import configparser
@@ -99,6 +100,29 @@ class Traps(Service, ctk.CTkToplevel):
         self.visible = False
         self.attributes('-topmost', True)
 
+    def save_project(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+        if not os.path.exists(path + '/traps'):
+            os.mkdir(path + '/traps')
+
+
+        with open(path + '/traps/coords.txt', 'a') as f:
+            for item in self.get_specs():
+                f.write(f'{item[0]} {item[1]} {item[2]} {item[3]} \n')
+
+    def set_project(self, path):
+        with open(path + '/traps/coords.txt', 'r') as file:
+            lines = file.readlines()
+
+        for line in lines:
+            line = line.strip()
+
+            spec = line.split(' ')
+            self.add_trap(float(spec[0]), float(spec[1]), float(spec[2]), float(spec[3]))
+
+
+
     def show_and_hide(self):
         if self.visible:
             self.withdraw()
@@ -131,6 +155,8 @@ class Traps(Service, ctk.CTkToplevel):
             plt.colorbar(cmap='hot')
             plt.show()
 
+
+
     def add_trap(self, x=0, y=0, z=0, w=1):
         cx = float(self.cx.get())
         cy = float(self.cy.get())
@@ -149,16 +175,17 @@ class Traps(Service, ctk.CTkToplevel):
             box = current_selection.row
             self.sheet.delete_row(box)
 
-    def get_specs(self):
+    def get_specs(self, scale=1):
         specs = []
-        scale = float(self.size.get()) * 10 ** -6
+        if scale is None:
+            scale = float(self.size.get()) * 10 ** -6
         for i in range(self.sheet.get_total_rows()):
             spec = self.sheet[i].data
             if spec[0] != '' and spec[1] != '' and spec[2] != '' and spec[3] != '':
-                specs.append((spec[0] * scale,
-                              spec[1] * scale,
-                              spec[2] * scale,
-                              spec[3]))
+                specs.append((float(spec[0]) * scale,
+                              float(spec[1]) * scale,
+                              float(spec[2]) * scale,
+                              float(spec[3])))
 
         return specs
 

@@ -390,8 +390,6 @@ class CanvasTab(Service, ctk.CTkFrame):
 
     @staticmethod
     def get_relative_path_from_folder(abs_path, target_folder):
-        print(abs_path)
-        print(target_folder)
         parts = list(Path(abs_path).parts)
         base_index = parts.index(target_folder)
 

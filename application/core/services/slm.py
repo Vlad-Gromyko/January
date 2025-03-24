@@ -102,6 +102,24 @@ class SLM(Service, ctk.CTkToplevel):
         self.visible = False
         self.attributes('-topmost', True)
 
+    def save_project(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
+        if not os.path.exists(path + '/slm'):
+            os.mkdir(path + '/slm')
+
+
+        self.save_image(self.masks['holo'], path + '/slm/holo')
+        self.save_image(self.masks['shift'], path + '/slm/shift')
+        self.save_image(self.masks['calibrate'], path + '/slm/calibrate')
+        self.save_image(self.masks['aberration'], path + '/slm/aberration')
+
+    @staticmethod
+    def save_image(item , path):
+        array = item.mask.get_array()
+        np.save(path, array)
+
+
     def show_and_hide(self):
         if self.visible:
             self.withdraw()
@@ -115,10 +133,10 @@ class SLM(Service, ctk.CTkToplevel):
 
 
     def set_project(self, path):
-        slm_folder = path
+        slm_folder = path + '/slm'
         config = configparser.ConfigParser()
         config.read(path + '/field.ini')
-        slm_name = config.sections()[0]
+
 
         self.slm_width = int(config['SLM']['WIDTH'])
         self.slm_height = int(config['SLM']['HEIGHT'])
@@ -127,12 +145,13 @@ class SLM(Service, ctk.CTkToplevel):
         self.pixel_in_um = int(config['SLM']['PIXEL_IN_UM'])
 
         for item in ['total', 'holo', 'shift', 'calibrate', 'aberration']:
-            if os.path.exists(slm_folder + '/' + item):
-                array = np.load(slm_folder + '/' + item)
+            if os.path.exists(slm_folder + '/' + item + '.npy'):
+                array = np.load(slm_folder + '/' + item + '.npy')
             else:
                 array = np.zeros((self.slm_height, self.slm_width))
             mask = Mask(array)
             self.masks[item].set_mask(mask)
+        self.redraw_slm()
 
     def set_slm(self, mask: Mask):
         self.masks['holo'].set_mask(mask)

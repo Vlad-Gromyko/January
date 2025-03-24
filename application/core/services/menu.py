@@ -28,7 +28,7 @@ class TopMenu(Service):
 
         camera_menu.add_command(label='Камера', command=lambda: self.show_callback('Camera'))
 
-        traps_menu = Menu()
+        traps_menu = Menu(tearoff=0)
 
         traps_menu.add_command(label='Ловушки', command=lambda: self.show_callback('Traps'))
 
