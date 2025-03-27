@@ -8,10 +8,13 @@ from application.core.services.nodes.nodes import NodeEditor
 from application.core.services.nodes.nodes_catalog import NodeCatalog
 from application.core.services.menu import TopMenu
 from application.core.services.ordered import Atlas, Combiner
+from application.core.services.calibrate import Calibrate
 from application.core.services.slm import SLM
 from application.core.services.camera import Camera
 from application.core.services.zernike import Zernike
 from application.core.services.traps import Traps
+from application.core.services.laser import Laser
+from application.core.services.optics import Optics
 
 
 class App:
@@ -61,8 +64,16 @@ class App:
 
 
         self.slm = SLM(self.main_window)
-
         self.event_bus.add_service(self.slm)
+
+        self.calibrate = Calibrate(self.main_window)
+        self.event_bus.add_service(self.calibrate)
+
+        self.laser = Laser(self.main_window)
+        self.event_bus.add_service(self.laser)
+
+        self.optics = Optics(self.main_window)
+        self.event_bus.add_service(self.optics)
 
         #self.status = StatusBar(self.main_window)
         #self.status.grid(row=3, column=0, columnspan=4, sticky='ew')

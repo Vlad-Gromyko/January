@@ -22,7 +22,7 @@ class TopMenu(Service):
         slm_menu = Menu(tearoff=0)
 
         slm_menu.add_command(label='Трансляция', command=lambda: self.show_callback('SLM'))
-        slm_menu.add_command(label='Калибровка')
+        slm_menu.add_command(label='Калибровка', command=lambda: self.show_callback('Calibrate'))
 
         camera_menu = Menu(tearoff=0)
 
@@ -42,6 +42,11 @@ class TopMenu(Service):
         order_menu.add_command(label='Атлас', command=lambda: self.show_callback('Atlas'))
         order_menu.add_command(label='Сумматор', command=lambda: self.show_callback('Combiner'))
 
+        optics_menu = Menu(tearoff=0)
+        optics_menu.add_command(label='Лазер', command=lambda: self.show_callback('Laser'))
+        optics_menu.add_command(label='Схема', command=lambda: self.show_callback('Optics'))
+
+
         self.menu.add_cascade(label='Проект', menu=file_menu)
         self.menu.add_cascade(label='SLM', menu=slm_menu)
         self.menu.add_cascade(label='Камера', menu=camera_menu)
@@ -49,6 +54,8 @@ class TopMenu(Service):
         self.menu.add_cascade(label='Ноды', menu=nodes_menu)
         self.menu.add_cascade(label='Очереди', menu=order_menu)
         self.menu.add_cascade(label='Ловушки', menu=traps_menu)
+        self.menu.add_cascade(label='Оптическая схема', menu=optics_menu)
+
 
     def save_dialog(self):
         ask = filedialog.asksaveasfilename(title='New title for select directory dialog box')

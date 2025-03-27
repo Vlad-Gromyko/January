@@ -77,7 +77,6 @@ class EventBus:
         for service_name in self.services:
             if name in service_name.fields.keys():
                 answer = service_name.fields[name]
-                print('yes', service_name)
 
         return answer
 

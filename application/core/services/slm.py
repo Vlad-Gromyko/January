@@ -84,6 +84,7 @@ class SLM(Service, ctk.CTkToplevel):
         self.checks[4].grid(row=1, column=0, padx=5, pady=5, sticky='ew')
 
         self.events_reactions['Set SLM Original'] = lambda event: self.set_slm(event.get_value())
+        self.events_reactions['Set SLM Calibrate'] = lambda event: self.set_any_holo(event.get_value(), 'calibrate')
 
 
         self.slm_width = 0
@@ -152,7 +153,11 @@ class SLM(Service, ctk.CTkToplevel):
         self.slm_height = int(config['SLM']['HEIGHT'])
         self.slm_gray = int(config['SLM']['GRAY'])
         self.monitor = int(config['SLM']['MONITOR'])
-        self.pixel_in_um = int(config['SLM']['PIXEL_IN_UM'])
+        self.pixel_in_um = int(config['SLM']['PIXEL_IN_UM']) * 10**-6
+
+        self.fields['slm width'] = self.slm_width
+        self.fields['slm height'] = self.slm_height
+        self.fields['slm pixel'] = self.pixel_in_um
 
         for item in ['total', 'holo', 'shift', 'calibrate', 'aberration']:
             if os.path.exists(slm_folder + '/' + item + '.npy'):
@@ -171,11 +176,20 @@ class SLM(Service, ctk.CTkToplevel):
 
         cv2.waitKey(1)
 
+    def set_any_holo(self, mask, name):
+        self.masks[name].set_mask(mask)
+        self.redraw_slm()
+        if cv2.getWindowProperty('SLM', cv2.WND_PROP_VISIBLE):
+            cv2.imshow('SLM', self.masks['total'].get_pixels())
+
+        cv2.waitKey(1)
+
     def redraw_slm(self):
         arrays = []
         for item in [ self.masks['holo'], self.masks['shift'], self.masks['calibrate'],
                      self.masks['aberration']]:
             if item.mask is not None:
+
                 arrays.append(item.get_mask().get_array())
 
         if len(arrays) != 0:

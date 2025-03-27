@@ -13,7 +13,8 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Заряд', self.palette['NUM'])
+        self.add_enter_socket('X (мкм)', self.palette['NUM'])
+        self.add_enter_socket('Y (мкм)', self.palette['NUM'])
         self.add_output_socket('', self.palette['HOLOGRAM'])
 
         self.widget_width = 200
@@ -26,26 +27,37 @@ class Node(INode):
         self.mask_label = MaskLabel(frame_widgets, Mask(np.zeros((1200, 1920))), size_scale=1 / 10)
         self.mask_label.grid(padx=5, pady=5)
 
+        self._x = None
+        self._y = None
+
     def execute(self):
         arguments = self.get_func_inputs()
 
-        width = self.event_bus.get_field('slm width')
-        height = self.event_bus.get_field('slm height')
+        x = arguments['X (мкм)'] * 10 **-6
+        y = arguments['Y (мкм)'] * 10 **-6
 
 
-        x = np.linspace(-width / 2, width / 2, width)
-        y = np.linspace(-height / 2, height / 2, height)
+        if self._x is None:
+            slm_width = self.event_bus.get_field('slm width')
+            slm_height = self.event_bus.get_field('slm height')
+            slm_pixel = self.event_bus.get_field('slm pixel')
 
-        x, y = np.meshgrid(x, y)
+            focus = self.event_bus.get_field('optics focus')
+            wave = self.event_bus.get_field('laser wavelength')
 
-        rho = np.sqrt(x ** 2 + y ** 2)
+            self._x = np.linspace(-slm_width / 2 * slm_pixel, slm_width / 2 * slm_pixel, slm_width)
+            self._y = np.linspace(-slm_height / 2 * slm_pixel, slm_height / 2 * slm_pixel, slm_height)
 
-        phi = np.arctan2(y, x)
-        phi = phi + np.min(phi)
+            self._x = self._x * 2 * np.pi / wave / focus
+            self._y = self._y * 2 * np.pi / wave / focus
 
-        phi = np.flip(phi, 1)
+            self._x, self._y = np.meshgrid(self._x, self._y)
 
-        mask = Mask(phi * arguments['Заряд'])
+
+        array = self._x * x + self._y * y
+        array = array % (2 * np.pi)
+
+        mask = Mask(array)
 
         self.mask_label.set_mask(mask)
 
@@ -53,7 +65,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Вихрь', 'hologram'
+        return Node, 'Смещение', 'hologram'
 
     def prepare_save_spec(self):
         return __file__, self.x, self.y, {}, self.special_id
