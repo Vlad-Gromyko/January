@@ -74,7 +74,8 @@ class NodeCatalog(Service, ctk.CTkToplevel):
         self.nodes.append(node)
 
         # self.event_bus.raise_event(Event('Canvas Add Node', value=node))
-        self.add_node_spec(node)
+        if node.possible_to_create():
+            self.add_node_spec(node)
 
     def register_nodes_in_folder(self, dir_path):
         for dirpath, _, filenames in os.walk(dir_path):

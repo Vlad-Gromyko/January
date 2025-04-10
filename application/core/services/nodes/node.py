@@ -123,7 +123,7 @@ class Socket(CanvasElement):
 
 
 class INode(CanvasElement, Service):
-    def __init__(self,special_id, config, editor, canvas, x, y, text='Node', theme='program', **kwargs):
+    def __init__(self, special_id, config, editor, canvas, x, y, control, text='Node', theme='program', **kwargs):
         CanvasElement.__init__(self, editor, canvas, x, y)
         Service.__init__(self)
         self.special_id = special_id
@@ -154,6 +154,7 @@ class INode(CanvasElement, Service):
 
         self.frame_IDs['back'] = None
         self.frame_IDs['widgets'] = None
+        self.frame_IDs['info'] = None
 
         self.enter_sockets = {}
         self.output_sockets = {}
@@ -175,12 +176,51 @@ class INode(CanvasElement, Service):
         self.output_width = 0
 
         self.chosen_one = False
+        self.visible = False
 
+        self.frame_info = ctk.CTkToplevel()
+        self.frame_info.withdraw()
+        self.frame_info.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        btn = ctk.CTkButton(self.canvas, text='\u2699', command=self.show_and_hide, bg_color='#000',
+                            fg_color=self.color_back)
+        if text != 'Старт':
+            self.frame_IDs['info'] = self.canvas.create_window(self.x, self.y, anchor=ctk.NE, window=btn, width=25,
+                                                               height=25, )
+            self.frame_info.title(text)
+
+        self.with_signals = control
+
+
+
+
+    def show_and_hide(self):
+        if self.visible:
+            self.frame_info.withdraw()
+        else:
+            self.frame_info.deiconify()
+        self.visible = not self.visible
+
+    def on_closing(self):
+        self.visible = False
+        self.frame_info.withdraw()
+
+    def remove_signal_sockets(self):
+        for enter in self.enter_sockets.values():
+            if enter.color == self.palette['SIGNAL']:
+                enter.set_value(None)
 
     @staticmethod
     @abstractmethod
     def create_info():
         return INode,
+
+    @staticmethod
+    def possible_to_create():
+        return True
+
+    def prepare_save_spec(self):
+        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
 
     def choose(self):
         self.chosen_one = True
@@ -196,6 +236,7 @@ class INode(CanvasElement, Service):
         for item in self.enter_sockets.keys():
             func_inputs[item] = self.enter_sockets[item].get_value()
 
+        self.remove_signal_sockets()
         return func_inputs
 
     def try_execute(self):
@@ -211,15 +252,18 @@ class INode(CanvasElement, Service):
             if item.color == self.palette['SIGNAL']:
                 whites.append(item.get_value())
 
-        #print('WHITES', whites, go)
+        # print('WHITES', whites, go)
         if any(whites) or len(whites) == 0:
             white_go = True
-            #print('GGG')
+            # print('GGG')
 
         if go and white_go:
-            #print('execute')
+            # print('execute')
             self.choose()
+            circ = self.canvas.create_oval(self.x - 10, self.y - 10, self.x + 10, self.y + 10, fill="#00FF00")
+            self.canvas.update_idletasks()
             self.execute()
+            self.canvas.delete(circ)
             self.no_choose()
             for name in self.output_sockets.keys():
                 if self.output_sockets[name].color == self.palette['SIGNAL']:
@@ -229,7 +273,7 @@ class INode(CanvasElement, Service):
         pass
 
     def add_clone(self):
-        self.event_bus.raise_event(Event('Canvas Add Node', self.__class__))
+        self.editor.add_node(self.__class__)
 
     def show_info(self):
         pass
@@ -255,16 +299,38 @@ class INode(CanvasElement, Service):
         self.menu.post(event.x_root, event.y_root)
 
     def add_menu(self):
+        self.menu.add_command(label='Контроль', command=self.add_signal)
         self.menu.add_command(label='Информация    \u003F', command=self.show_info)
         self.menu.add_command(label='Дублировать    +', command=self.add_clone)
         self.menu.add_command(label='Показать Код', command=self.show_code)
         self.menu.add_separator()
         self.menu.add_command(label='Удалить        \u2573', command=self.delete_node)
 
+    def add_signal(self):
+        if not self.with_signals:
+            width = max(100, self.enter_width + self.output_width + 30, self.widget_width)
+            height_e = self.enter_height + self.height - 3
+            height_o = self.output_height + self.height - 3
+            self.add_enter_socket('go', self.palette['SIGNAL'], -18, -height_e)
+            self.add_output_socket('go', self.palette['SIGNAL'], width + 15, -height_o)
+        else:
+            self.enter_sockets['go'].delete_socket()
+            self.output_sockets['go'].delete_socket()
+            self.enter_sockets.pop('go')
+            self.output_sockets.pop('go')
+
+        self.with_signals = not self.with_signals
+
     def run(self):
         self.move_outputs()
 
         self.add_menu()
+        if self.with_signals:
+            width = max(100, self.enter_width + self.output_width + 30, self.widget_width)
+            height_e = self.enter_height + self.height - 3
+            height_o = self.output_height + self.height - 3
+            self.add_enter_socket('go', self.palette['SIGNAL'], -18, -height_e)
+            self.add_output_socket('go', self.palette['SIGNAL'], width + 15, -height_o)
 
     def max_height(self):
         return max(self.enter_height, self.output_height) + self.height
@@ -319,6 +385,8 @@ class INode(CanvasElement, Service):
         if self.frame_IDs['widgets']:
             self.canvas.move(self.frame_IDs['widgets'], 0, 2 + max(self.output_height,
                                                                    self.enter_height) + self.height)
+        if self.frame_IDs['info']:
+            self.canvas.move(self.frame_IDs['info'], width, 0)
 
     def start_move(self, event):
         self.moving = True

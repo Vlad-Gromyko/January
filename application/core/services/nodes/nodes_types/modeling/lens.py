@@ -6,16 +6,14 @@ import LightPipes as lp
 
 
 class Node(INode):
-    def __init__(self, special_id, config, editor, canvas, x, y, text, theme, **kwargs):
-        super().__init__(special_id, config, editor, canvas, x, y, text, theme)
+    def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
+        super().__init__(special_id, config, editor, canvas, x, y, control, text, theme)
 
         self.special_id = special_id
 
-        self.add_enter_socket('', self.palette['SIGNAL'])
 
         self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
 
-        self.add_output_socket('', self.palette['SIGNAL'])
         self.add_output_socket('Интенсивность', self.palette['CAMERA_SHOT'])
 
         self.field = None
@@ -74,11 +72,12 @@ class Node(INode):
         result = lp.Intensity(field)
 
         self.output_sockets['Интенсивность'].set_value(result)
-        self.output_sockets[''].set_value(True)
+        if 'go' in self.output_sockets.keys():
+            self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
         return Node, 'Линза', 'camera'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id
+        return __file__, self.x, self.y, {}, self.special_id, self.with_signals

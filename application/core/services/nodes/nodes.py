@@ -3,7 +3,10 @@ import tkinter
 from tkinter.simpledialog import askstring
 from tkinter.messagebox import showwarning
 
+import application.core.events
 from application.core.events import Service, Event
+import application.core.services.nodes.nodes_types.containers.vector1d as vector
+import application.core.services.nodes.nodes_types.containers.vector2d as vector2d
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
 import os
@@ -25,13 +28,29 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         ctk.CTkButton(self.frame_buttons, text='Цветовая схема', width=25, height=25,
                       command=self.show_color_scheme).grid(row=0, column=1, padx=5)
 
-        self.button_action = ctk.CTkButton(self.frame_buttons, text='\u23F5', width=25, height=25,
+        ctk.CTkButton(self.frame_buttons, text='Инспектор', width=25, height=25,
+                      command=self.show_inspector).grid(row=0, column=2, padx=5)
+
+        self.button_action = ctk.CTkButton(self.frame_buttons, text='\u23F5', width=25, height=25, fg_color='#FFF',
+                                           text_color='#000',
                                            command=self.start_execute)
         self.button_action.grid(row=0, column=0, padx=5)
 
-        self.add_button = ctk.CTkButton(self.frame_buttons, text='\uFF0B', width=25, height=25,
+        self.add_button = ctk.CTkButton(self.frame_buttons, text='+ Холст', width=25, height=25,
                                         command=self.plus_add_canvas)
-        self.add_button.grid(row=0, column=2, padx=5)
+        self.add_button.grid(row=0, column=3, padx=5)
+
+        self.add_array_button = ctk.CTkButton(self.frame_buttons, text='+ Вектор', width=25, height=25,
+                                        command=self.plus_add_vector)
+        self.add_array_button.grid(row=0, column=4, padx=5)
+
+        self.add_matrix_button = ctk.CTkButton(self.frame_buttons, text='+ Матрица', width=25, height=25,
+                                              command=self.plus_add_matrix)
+        self.add_matrix_button.grid(row=0, column=5, padx=5)
+
+
+
+
 
         self.width = 1165
         self.height = 600
@@ -42,7 +61,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.fields['Canvas Names'] = []
 
         self.scroll = ctk.CTkScrollableFrame(self.frame_buttons, orientation='horizontal', height=25, width=900)
-        self.scroll.grid(row=0, column=3, padx=5, sticky='ew')
+        self.scroll.grid(row=0, column=6, padx=5, sticky='ew')
 
         self.events_reactions['Canvas Close'] = lambda event: self.close_canvas(event.get_value())
         self.events_reactions['Canvas Selected'] = lambda event: self.choose_canvas(event.get_value())
@@ -52,8 +71,27 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
         self.config = None
 
+    def show_inspector(self):
+        self.active_tab.vectors.deiconify()
+
+    def plus_add_vector(self):
+        ask = askstring('Добавить', 'Название Вектора:')
+        if ask:
+            self.active_tab.vectors[ask] = []
+            self.add_node(vector.Node, name=ask)
+
+    def plus_add_matrix(self):
+        ask = askstring('Добавить', 'Название Матрицы:')
+        if ask:
+            self.active_tab.matrices[ask] = [[]]
+            self.add_node(vector2d.Node, name=ask)
+
+
     def start_execute(self):
+        self.button_action.configure(fg_color='#000', text_color='#FFF')
+        self.button_action.update_idletasks()
         self.active_tab.start_execute()
+        self.button_action.configure(fg_color='#FFF', text_color='#000')
 
     def show_color_scheme(self):
         self.active_tab.show_color_scheme()
@@ -108,8 +146,8 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         if self.active_tab:
             self.active_tab.canvas.grid(row=1, column=0, sticky='nsew', columnspan=2)
 
-    def add_node(self, node, special_id=None, x=300, y=300, **kwargs):
-        self.active_tab.add_node(node, special_id, x, y, **kwargs)
+    def add_node(self, node, special_id=None, x=300, y=300, control=False, **kwargs):
+        self.active_tab.add_node(node, special_id, x, y, control, **kwargs)
 
     def set_project(self, path):
         self.config = configparser.ConfigParser()
@@ -133,12 +171,12 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
             for f in filenames:
                 if f.split('.')[-1] != 'txt':
                     with open(dir_path + '/' + f, 'rb') as file:
-                        loaded_path, loaded_x, loaded_y, loaded_kwargs, loaded_id = pickle.load(file)
+                        loaded_path, loaded_x, loaded_y, loaded_kwargs, loaded_id, loaded_control = pickle.load(file)
 
                     file = str(Path(__file__).parent)
 
                     node = self.dynamic_import(Path(file + '/' + str(loaded_path)))
-                    self.add_node(node,loaded_id, loaded_x, loaded_y, **loaded_kwargs)
+                    self.add_node(node, loaded_id, loaded_x, loaded_y, loaded_control, **loaded_kwargs)
 
 
                 else:
@@ -374,6 +412,28 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         self.supreme_leader_node = 0
 
+        self.vectors = {}
+        self.matrices = {}
+        self.events_reactions['Vector Updated'] = lambda event : self.update_vector(event)
+        self.events_reactions['Matrix Updated'] = lambda event : self.update_matrix(event)
+
+    def update_vector(self, event):
+        tab = event.get_value()['tab']
+        name = event.get_value()['name']
+        value = event.get_value()['value']
+
+        if self == tab:
+            self.vectors[name] = value
+
+    def update_matrix(self, event):
+        tab = event.get_value()['tab']
+        name = event.get_value()['name']
+        value = event.get_value()['value']
+
+        if self == tab:
+            self.matrices[name] = value
+
+
     def save_project(self, path):
         if not os.path.exists(path):
             os.mkdir(path)
@@ -384,9 +444,10 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         for counter, node in enumerate(self.nodes):
             spec = node.prepare_save_spec()
-
+            print(spec[0])
             with open(f'{path + '/canvases' + '/' + self.name + '/' + str(counter)}.pkl', 'wb') as f:
-                pickle.dump((self.get_relative_path_from_folder(spec[0], 'nodes_types'), spec[1], spec[2], spec[3], spec[4]), f)
+                pickle.dump(
+                    (self.get_relative_path_from_folder(spec[0], 'nodes_types'), spec[1], spec[2], spec[3], spec[4], spec[5]), f)
 
     @staticmethod
     def get_relative_path_from_folder(abs_path, target_folder):
@@ -557,17 +618,16 @@ class CanvasTab(Service, ctk.CTkFrame):
             node = self.socket_output_to_node_IDs[tag]
             return node.output_sockets_ovals[tag]
 
-    def add_node(self, node, special_id=None, x=300, y=300, **kwargs):
+    def add_node(self, node, special_id=None, x=300, y=300, control=False, **kwargs):
 
         spec = node.create_info()
-
 
         if special_id:
             number = special_id
         else:
             number = self.supreme_leader_node
 
-        node = node(number, self.config, self, self.canvas, x, y, spec[1],
+        node = node(number, self.config, self, self.canvas, x, y, control, spec[1],
                     spec[2], **kwargs)
         node.run()
 

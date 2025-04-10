@@ -149,15 +149,19 @@ class SLM(Service, ctk.CTkToplevel):
         config.read(path + '/field.ini')
 
 
-        self.slm_width = int(config['SLM']['WIDTH'])
-        self.slm_height = int(config['SLM']['HEIGHT'])
+        self.slm_width = int(config['SLM']['width'])
+        self.slm_height = int(config['SLM']['height'])
         self.slm_gray = int(config['SLM']['GRAY'])
         self.monitor = int(config['SLM']['MONITOR'])
         self.pixel_in_um = int(config['SLM']['PIXEL_IN_UM']) * 10**-6
 
+
         self.fields['slm width'] = self.slm_width
         self.fields['slm height'] = self.slm_height
         self.fields['slm pixel'] = self.pixel_in_um
+
+        print(self.fields)
+
 
         for item in ['total', 'holo', 'shift', 'calibrate', 'aberration']:
             if os.path.exists(slm_folder + '/' + item + '.npy'):

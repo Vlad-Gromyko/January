@@ -4,8 +4,8 @@ from application.core.services.nodes.node import INode
 
 
 class Node(INode):
-    def __init__(self, special_id, config, editor, canvas, x, y, text, theme, **kwargs):
-        super().__init__(special_id, config, editor, canvas, x, y, text, theme)
+    def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
+        super().__init__(special_id, config, editor, canvas, x, y, control, text, theme)
 
         self.special_id = special_id
 
@@ -29,8 +29,11 @@ class Node(INode):
         self.num_label.update_idletasks()
         self.output_sockets[''].set_value(arguments[''])
 
+        if 'go' in self.output_sockets.keys():
+            self.output_sockets['go'].set_value(True)
+
     @staticmethod
     def create_info():
         return Node, 'Повторитель', 'math'
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id
+        return __file__, self.x, self.y, {}, self.special_id, self.with_signals

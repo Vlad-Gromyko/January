@@ -1,5 +1,7 @@
 from application.core.events import Event
 from application.core.services.nodes.node import INode
+import customtkinter as ctk
+import time
 
 
 class Node(INode):
@@ -8,21 +10,28 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('', self.palette['SIGNAL'])
-        self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
+        self.add_enter_socket('Вектор', self.palette['vector1d'])
 
-        self.add_output_socket('', self.palette['SIGNAL'])
+
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        self.event_bus.raise_event(Event('Set SLM Original', arguments['Голограмма']))
+        name = arguments['Вектор']
+
+        self.event_bus.raise_event(
+            Event('Vector Updated', {'name': name, 'value': [], 'tab': self.editor}))
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'SLM', 'slm'
+        return Node, 'Clear', 'Container'
+
+    @staticmethod
+    def possible_to_create():
+        return True
+
     def prepare_save_spec(self):
         return __file__, self.x, self.y, {}, self.special_id, self.with_signals

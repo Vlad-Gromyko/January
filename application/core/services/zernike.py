@@ -190,6 +190,26 @@ class Zernike(Service, ctk.CTkToplevel):
         self.fields['Last Zernike Mask'] = None
 
     def calculate_one(self, number, amplitude):
+
+        self.slm_width = self.event_bus.get_field('slm width')
+        self.slm_height = self.event_bus.get_field('slm height')
+
+        self.pixel_in_um = self.event_bus.get_field('slm pixel')
+
+        radius_y = 1
+
+        radius_x = radius_y / self.slm_height * self.slm_width
+
+        _x = np.linspace(-radius_x, radius_x, self.slm_width)
+        _y = np.linspace(-radius_y, radius_y, self.slm_height)
+
+        _x, _y = np.meshgrid(_x, _y)
+
+        self.r = np.sqrt(_x ** 2 + _y ** 2)
+
+        self.phi = np.arctan2(_y, _x)
+
+
         array = np.zeros((self.slm_height, self.slm_width))
         item = self.zernike_masks[int(number)]
 
@@ -204,6 +224,25 @@ class Zernike(Service, ctk.CTkToplevel):
         return array
 
     def calculate(self, weights):
+
+        self.slm_width = self.event_bus.get_field('slm width')
+        self.slm_height = self.event_bus.get_field('slm height')
+
+        self.pixel_in_um = self.event_bus.get_field('slm pixel')
+
+        radius_y = 1
+
+        radius_x = radius_y / self.slm_height * self.slm_width
+
+        _x = np.linspace(-radius_x, radius_x, self.slm_width)
+        _y = np.linspace(-radius_y, radius_y, self.slm_height)
+
+        _x, _y = np.meshgrid(_x, _y)
+
+        self.r = np.sqrt(_x ** 2 + _y ** 2)
+
+        self.phi = np.arctan2(_y, _x)
+
         array = np.zeros((self.slm_height, self.slm_width))
 
         for counter, item in enumerate(self.zernike_masks):

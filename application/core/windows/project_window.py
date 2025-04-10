@@ -127,6 +127,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
             'signal': '#ECF0F1',
             'bool': '#E74C3C',
             'num': '#3498DB',
+            'str': '#379800',
             'num_list': '#2980B9',
             'hologram': '#2ECC71',
             'hologram_list': '#27AE60',

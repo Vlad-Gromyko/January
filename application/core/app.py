@@ -25,11 +25,14 @@ class App:
         self.main_window = MainWindow()
         self.event_bus.add_service(self.main_window)
 
+        self.splash_window = SplashWindow()
+        self.event_bus.add_service(self.splash_window)
+        self.splash_window.show_splash()
+
+
         self.project_window = ProjectWindow()
         self.event_bus.add_service(self.project_window)
 
-        self.splash_window = SplashWindow()
-        self.event_bus.add_service(self.splash_window)
 
         ### On main
 
@@ -79,6 +82,8 @@ class App:
         #self.status.grid(row=3, column=0, columnspan=4, sticky='ew')
 
         #self.event_bus.add_service(self.status)
+
+        self.splash_window.withdraw()
 
     def run(self):
         self.main_window.mainloop()

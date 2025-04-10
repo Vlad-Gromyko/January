@@ -1,8 +1,8 @@
 from application.core.services.nodes.node import INode
 
 class Node(INode):
-    def __init__(self, special_id,config, editor, canvas, x, y, text, theme):
-        super().__init__(special_id ,config,editor, canvas, x, y, text,theme)
+    def __init__(self, special_id,config, editor, canvas, x, y,control, text, theme):
+        super().__init__(special_id ,config,editor, canvas, x, y, control, text,theme)
 
         self.special_id = special_id
 
@@ -10,10 +10,12 @@ class Node(INode):
         self.label.configure(text_color='#000')
 
         self.add_output_socket('', self.palette['SIGNAL'], self.width + 13, -self.height + 7)
-        self.add_enter_socket('', self.palette['SIGNAL'], self.width + 13, -self.height + 7)
 
         self.enter_height = 0
         self.output_height = 0
+
+    def add_signal(self):
+        pass
 
     def add_menu(self):
         self.menu.add_command(label='Информация', command=self.show_info)
@@ -35,4 +37,4 @@ class Node(INode):
         return Node, 'Старт', 'program'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id
+        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
