@@ -73,4 +73,4 @@ class Node(INode):
         return False
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {'name': self.vector_name}, self.special_id
+        return __file__, self.x, self.y, {'name': self.vector_name}, self.special_id, self.with_signals

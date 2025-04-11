@@ -32,7 +32,6 @@ class Node(INode):
         width = self.event_bus.get_field('slm width')
         height = self.event_bus.get_field('slm height')
 
-
         x = np.linspace(-width / 2, width / 2, width)
         y = np.linspace(-height / 2, height / 2, height)
 
