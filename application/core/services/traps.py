@@ -135,6 +135,7 @@ class Traps(Service, ctk.CTkToplevel):
         self.withdraw()
 
     def update_traps(self, event=None):
+        self.sheet.row_index([i for i in range(self.sheet.get_total_rows())])
         self.fields['Traps'] = self.get_specs()
 
     def show_traps(self):
@@ -174,8 +175,9 @@ class Traps(Service, ctk.CTkToplevel):
         if current_selection:
             box = current_selection.row
             self.sheet.delete_row(box)
+            self.update_traps()
 
-    def get_specs(self, scale=1):
+    def get_specs(self, scale=None):
         specs = []
         if scale is None:
             scale = float(self.size.get()) * 10 ** -6

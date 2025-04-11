@@ -12,28 +12,26 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Номер', self.palette['NUM'])
+        self.add_enter_socket('Max', self.palette['NUM'])
+        self.add_enter_socket('Min', self.palette['NUM'])
 
-        self.add_output_socket('X', self.palette['NUM'])
-        self.add_output_socket('Y', self.palette['NUM'])
-        self.add_output_socket('Z', self.palette['NUM'])
-        self.add_output_socket('W', self.palette['NUM'])
-        self.add_output_socket('[]', self.palette['vector1d'])
+        self.add_output_socket('int', self.palette['NUM'])
+        self.add_output_socket('float', self.palette['NUM'])
+
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        num = arguments['Номер']
+        num1 = arguments['От']
+        num2 = arguments['До']
 
-        traps = self.event_bus.get_field('Traps')
 
-        trap = traps[int(num)]
+        value = np.random.uniform(num1, num2)
 
-        self.output_sockets['X'].set_value(trap[0])
-        self.output_sockets['Y'].set_value(trap[1])
-        self.output_sockets['Z'].set_value(trap[2])
-        self.output_sockets['W'].set_value(trap[3])
-        self.output_sockets['[]'].set_value(trap)
+        self.output_sockets['int'].set_value(int(value))
+        self.output_sockets['float'].set_value(value)
+
+
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
