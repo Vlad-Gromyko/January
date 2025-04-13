@@ -16,13 +16,14 @@ class Node(INode):
 
         self.add_output_socket('Вектор', self.palette['vector1d'])
 
-
-
     def execute(self):
         arguments = self.get_func_inputs()
 
         name = arguments['Вектор']
-        vector = self.editor.vectors[name].copy()
+
+        vector = self.editor.vectors[name]
+
+        vector = vector.copy()
 
 
         element = arguments['Элемент']

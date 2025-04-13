@@ -71,10 +71,9 @@ class Node(INode):
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
 
-        elif isinstance(value, str):
-            vector = self.editor.vectors[value]
+        elif isinstance(value, list):
 
-            self.ax.plot(vector)
+            self.ax.plot(value)
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
 

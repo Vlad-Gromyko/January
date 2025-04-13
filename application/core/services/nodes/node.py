@@ -81,6 +81,12 @@ class Socket(CanvasElement):
 
             editor.socket_output_to_node_IDs[self.oval_ID] = node
 
+    def set_color(self, color):
+        self.color = color
+        self.canvas.itemconfig(self.oval_ID, fill=color)
+        for wire in self.wires:
+            wire.shut_wire()
+
     def get_value(self):
 
         return self._value_to_hold
@@ -94,6 +100,8 @@ class Socket(CanvasElement):
 
         if self.enter:
             self.node.try_execute()
+
+
 
     def delete_socket(self):
         self.canvas.delete(self.oval_ID)

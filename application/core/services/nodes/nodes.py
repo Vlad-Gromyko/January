@@ -3,12 +3,12 @@ import tkinter
 from tkinter.simpledialog import askstring
 from tkinter.messagebox import showwarning
 
-import application.core.events
 from application.core.events import Service, Event
-import application.core.services.nodes.nodes_types.containers.vector1d as vector
-import application.core.services.nodes.nodes_types.containers.vector2d as vector2d
+import application.core.services.nodes.nodes_types.containers.value as container
+from application.core.utility.mask import Mask
 from tkinterdnd2 import TkinterDnD, DND_ALL
 
+import numpy as np
 import os
 import configparser
 import pickle
@@ -40,17 +40,9 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                                         command=self.plus_add_canvas)
         self.add_button.grid(row=0, column=3, padx=5)
 
-        self.add_array_button = ctk.CTkButton(self.frame_buttons, text='+ Вектор', width=25, height=25,
-                                        command=self.plus_add_vector)
+        self.add_array_button = ctk.CTkButton(self.frame_buttons, text='+ Переменная', width=25, height=25,
+                                              command=self.plus_add_container)
         self.add_array_button.grid(row=0, column=4, padx=5)
-
-        self.add_matrix_button = ctk.CTkButton(self.frame_buttons, text='+ Матрица', width=25, height=25,
-                                              command=self.plus_add_matrix)
-        self.add_matrix_button.grid(row=0, column=5, padx=5)
-
-
-
-
 
         self.width = 1165
         self.height = 600
@@ -72,20 +64,13 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.config = None
 
     def show_inspector(self):
-        self.active_tab.vectors.deiconify()
+        self.active_tab.containers.deiconify()
 
-    def plus_add_vector(self):
+    def plus_add_container(self):
         ask = askstring('Добавить', 'Название Вектора:')
         if ask:
-            self.active_tab.vectors[ask] = []
-            self.add_node(vector.Node, name=ask)
-
-    def plus_add_matrix(self):
-        ask = askstring('Добавить', 'Название Матрицы:')
-        if ask:
-            self.active_tab.matrices[ask] = [[]]
-            self.add_node(vector2d.Node, name=ask)
-
+            self.active_tab.containers[ask] = 0
+            self.add_node(container.Node, name=ask)
 
     def start_execute(self):
         self.button_action.configure(fg_color='#000', text_color='#FFF')
@@ -167,9 +152,18 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
     def load_canvas(self, dir_path):
         self.add_canvas(dir_path.split('/')[-1])
         wires = None
+        containers = None
         for dirpath, _, filenames in os.walk(dir_path):
+
             for f in filenames:
-                if f.split('.')[-1] != 'txt':
+                if 'containers' in f:
+                    f.split('/').pop()
+
+                    containers = dir_path + '/' + '/'.join(f)
+                    print(f.split('/').pop())
+
+            for f in filenames:
+                if f.split('.')[-1] != 'txt' and ('containers' not in f):
                     with open(dir_path + '/' + f, 'rb') as file:
                         loaded_path, loaded_x, loaded_y, loaded_kwargs, loaded_id, loaded_control = pickle.load(file)
 
@@ -178,11 +172,20 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                     node = self.dynamic_import(Path(file + '/' + str(loaded_path)))
                     self.add_node(node, loaded_id, loaded_x, loaded_y, loaded_control, **loaded_kwargs)
 
-
-                else:
+                elif f.split('.')[-1] == 'txt':
                     wires = dir_path + '/' + f
+
+
+        if containers:
+            print('aaaaaaaaaaaaaaaaaaaa')
+            self.load_containers(containers)
+
         if wires:
             self.load_wires(wires)
+
+    def load_containers(self, path):
+        for file in os.walk(path):
+            self.active_tab.containers[file.split('/')[0]] = pickle.load(file)
 
     def load_wires(self, path):
         with open(path, "r") as file:
@@ -277,6 +280,9 @@ class Wire(Service):
             os.mkdir(path + '/canvases')
         if not os.path.exists(path + '/canvases' + '/' + self.tab_name):
             os.mkdir(path + '/canvases' + '/' + self.tab_name)
+
+        if not os.path.exists(path + '/canvases' + '/' + self.tab_name + '/containers'):
+            os.mkdir(path + '/canvases' + '/' + self.tab_name + '/containers')
 
         if not os.path.exists(path + '/canvases' + '/' + self.tab_name + '/wires.txt'):
             with open((path + '/canvases' + '/' + self.tab_name + '/wires.txt'), 'w') as fp:
@@ -412,27 +418,17 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         self.supreme_leader_node = 0
 
-        self.vectors = {}
-        self.matrices = {}
-        self.events_reactions['Vector Updated'] = lambda event : self.update_vector(event)
-        self.events_reactions['Matrix Updated'] = lambda event : self.update_matrix(event)
+        self.containers = {}
 
-    def update_vector(self, event):
+        self.events_reactions['Value Updated'] = lambda event: self.update_container(event)
+
+    def update_container(self, event):
         tab = event.get_value()['tab']
         name = event.get_value()['name']
         value = event.get_value()['value']
 
         if self == tab:
-            self.vectors[name] = value
-
-    def update_matrix(self, event):
-        tab = event.get_value()['tab']
-        name = event.get_value()['name']
-        value = event.get_value()['value']
-
-        if self == tab:
-            self.matrices[name] = value
-
+            self.containers[name] = value
 
     def save_project(self, path):
         if not os.path.exists(path):
@@ -441,13 +437,19 @@ class CanvasTab(Service, ctk.CTkFrame):
             os.mkdir(path + '/canvases')
         if not os.path.exists(path + '/canvases' + '/' + self.name):
             os.mkdir(path + '/canvases' + '/' + self.name)
+        if not os.path.exists(path + '/canvases' + '/' + self.name + '/containers'):
+            os.mkdir(path + '/canvases' + '/' + self.name + '/containers')
 
         for counter, node in enumerate(self.nodes):
             spec = node.prepare_save_spec()
-            print(spec[0])
+
             with open(f'{path + '/canvases' + '/' + self.name + '/' + str(counter)}.pkl', 'wb') as f:
                 pickle.dump(
-                    (self.get_relative_path_from_folder(spec[0], 'nodes_types'), spec[1], spec[2], spec[3], spec[4], spec[5]), f)
+                    (self.get_relative_path_from_folder(spec[0], 'nodes_types'), spec[1], spec[2], spec[3], spec[4],
+                     spec[5]), f)
+        for name in self.containers.keys():
+            with open(f'{path + '/canvases' + '/' + self.name + '/containers/' + name}.pkl', 'wb') as f:
+                pickle.dump(self.containers[name], f)
 
     @staticmethod
     def get_relative_path_from_folder(abs_path, target_folder):
@@ -629,6 +631,7 @@ class CanvasTab(Service, ctk.CTkFrame):
 
         node = node(number, self.config, self, self.canvas, x, y, control, spec[1],
                     spec[2], **kwargs)
+
         node.run()
 
         if len(self.nodes) > 0:
