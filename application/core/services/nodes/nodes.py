@@ -153,17 +153,20 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.add_canvas(dir_path.split('/')[-1])
         wires = None
         containers = None
+
         for dirpath, _, filenames in os.walk(dir_path):
-
             for f in filenames:
-                if 'containers' in f:
-                    f.split('/').pop()
 
-                    containers = dir_path + '/' + '/'.join(f)
-                    print(f.split('/').pop())
+                if dirpath.endswith('containers'):
+                    containers = dirpath
 
+        if containers:
+            self.load_containers(containers)
+
+        for dirpath, _, filenames in os.walk(dir_path):
             for f in filenames:
-                if f.split('.')[-1] != 'txt' and ('containers' not in f):
+                if f.split('.')[-1] != 'txt' and not dirpath.endswith('containers'):
+
                     with open(dir_path + '/' + f, 'rb') as file:
                         loaded_path, loaded_x, loaded_y, loaded_kwargs, loaded_id, loaded_control = pickle.load(file)
 
@@ -175,17 +178,15 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                 elif f.split('.')[-1] == 'txt':
                     wires = dir_path + '/' + f
 
-
-        if containers:
-            print('aaaaaaaaaaaaaaaaaaaa')
-            self.load_containers(containers)
-
         if wires:
             self.load_wires(wires)
 
     def load_containers(self, path):
-        for file in os.walk(path):
-            self.active_tab.containers[file.split('/')[0]] = pickle.load(file)
+        for file in os.listdir(path):
+            with open(path + '/' + file, 'rb') as f:
+                self.active_tab.containers[file.split('.')[0]] = pickle.load(f)
+
+        print(self.active_tab.containers)
 
     def load_wires(self, path):
         with open(path, "r") as file:
