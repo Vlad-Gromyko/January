@@ -15,6 +15,7 @@ class Node(INode):
         self.add_output_socket('Тело Цикла', self.palette['SIGNAL'])
         self.add_output_socket('Индекс', self.palette['NUM'])
         self.load_data = kwargs
+        self.strong_control = True
 
     def execute(self):
         arguments = self.get_func_inputs()

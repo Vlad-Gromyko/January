@@ -1,8 +1,8 @@
 from application.core.services.nodes.node import INode
 
 class Node(INode):
-    def __init__(self, special_id,config, editor, canvas, x, y,control, text, theme):
-        super().__init__(special_id ,config,editor, canvas, x, y, control, text,theme)
+    def __init__(self, special_id,config, editor, canvas, x, y,control, text, theme, **kwargs):
+        super().__init__(special_id ,config,editor, canvas, x, y, control, text,theme, **kwargs)
 
         self.special_id = special_id
 

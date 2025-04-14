@@ -160,7 +160,6 @@ class SLM(Service, ctk.CTkToplevel):
         self.fields['slm height'] = self.slm_height
         self.fields['slm pixel'] = self.pixel_in_um
 
-        print(self.fields)
 
 
         for item in ['total', 'holo', 'shift', 'calibrate', 'aberration']:

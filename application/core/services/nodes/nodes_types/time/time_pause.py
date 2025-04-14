@@ -9,10 +9,9 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('', self.palette['SIGNAL'])
-        self.add_output_socket('', self.palette['SIGNAL'])
         self.add_enter_socket('Сек.', self.palette['NUM'])
         self.load_data = kwargs
+        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 

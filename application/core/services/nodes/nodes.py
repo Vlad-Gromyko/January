@@ -163,7 +163,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                     print(f.split('/').pop())
 
             for f in filenames:
-                if f.split('.')[-1] != 'txt' and ('containers' not in f):
+                if f.split('.')[-1] != 'txt' and ('containers' not in dirpath):
                     with open(dir_path + '/' + f, 'rb') as file:
                         loaded_path, loaded_x, loaded_y, loaded_kwargs, loaded_id, loaded_control = pickle.load(file)
 
@@ -202,7 +202,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         first = self.find_socket_by_name(enter)
         second = self.find_socket_by_name(output)
 
-        wire = Wire(self, self.name, self.active_tab.canvas, first, second)
+        wire = Wire(self, self.active_tab.name, self.active_tab.canvas, first, second, trigger=False)
         self.event_bus.add_service(wire)
 
     def find_socket_by_name(self, name):
@@ -254,7 +254,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
 
 class Wire(Service):
-    def __init__(self, editor, tab_name, canvas, first, second):
+    def __init__(self, editor, tab_name, canvas, first, second, trigger=True):
         super().__init__()
         self.editor = editor
         self.tab_name = tab_name
@@ -270,10 +270,11 @@ class Wire(Service):
 
         self.draw()
 
-        if self.output.get_value() is not None:
+        if self.output.get_value() is not None and trigger:
             self.kick_value(self.output.get_value())
 
     def save_project(self, path):
+
         if not os.path.exists(path):
             os.mkdir(path)
         if not os.path.exists(path + '/canvases'):
@@ -629,6 +630,8 @@ class CanvasTab(Service, ctk.CTkFrame):
         else:
             number = self.supreme_leader_node
 
+        print('pppppp', number)
+
         node = node(number, self.config, self, self.canvas, x, y, control, spec[1],
                     spec[2], **kwargs)
 
@@ -644,7 +647,7 @@ class CanvasTab(Service, ctk.CTkFrame):
         self.nodes.append(node)
 
         if special_id:
-            self.supreme_leader_node = max(self.supreme_leader_node, special_id)
+            self.supreme_leader_node = max(self.supreme_leader_node, special_id) + 1
         else:
             self.supreme_leader_node += 1
 

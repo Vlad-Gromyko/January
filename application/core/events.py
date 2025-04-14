@@ -88,4 +88,6 @@ class EventBus:
         answer = []
         for service_name in self.services:
             answer.append(service_name.raise_event(event))
+        if event.get_name() == 'Save Project':
+            print('Saved')
         return all(answer)

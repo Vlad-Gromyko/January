@@ -105,10 +105,10 @@ class Camera(Service, ctk.CTkToplevel):
             self.label_shot.configure(image=ctk.CTkImage(light_image=Image.fromarray(gray), size=(x // 2, y // 2)))
             self.refresh_shots()
             self.camera_status.configure(fg_color='#32CD32', text='Включена')
-            if np.max(frame) >= 255:
+            if np.max(gray) >= 255:
                 self.camera_status.configure(fg_color='#FFA500', text='Пересвечена')
 
-            if np.max(frame) == 0:
+            if np.max(gray) == 0:
                 self.camera_status.configure(fg_color='#8B0000', text='Нет излучения')
 
     def take_back(self):
@@ -125,10 +125,10 @@ class Camera(Service, ctk.CTkToplevel):
             self.label_back.configure(image=ctk.CTkImage(light_image=Image.fromarray(gray), size=(x // 2, y // 2)))
             self.refresh_shots()
             self.camera_status.configure(fg_color='#32CD32', text='Включена')
-            if np.max(frame) >= 255:
+            if np.max(gray) >= 255:
                 self.camera_status.configure(fg_color='#FFA500', text='Пересвечена')
 
-            if np.max(frame) == 0:
+            if np.max(gray) == 0:
                 self.camera_status.configure(fg_color='#8B0000', text='Нет излучения')
 
     def refresh_shots(self):

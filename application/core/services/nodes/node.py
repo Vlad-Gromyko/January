@@ -184,33 +184,15 @@ class INode(CanvasElement, Service):
         self.chosen_one = False
         self.visible = False
 
-        self.frame_info = ctk.CTkToplevel()
-        self.frame_info.withdraw()
-        self.frame_info.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        btn = ctk.CTkButton(self.canvas, text='\u2699', command=self.show_and_hide, bg_color='#000',
-                            fg_color=self.color_back)
-        if text != 'Старт':
-            self.frame_IDs['info'] = self.canvas.create_window(self.x, self.y, anchor=ctk.NE, window=btn, width=25,
-                                                               height=25, )
-            self.frame_info.title(text)
 
         self.with_signals = control
+        self.strong_control = False
 
         self.executable = True
 
         self.load_data = kwargs
 
-    def show_and_hide(self):
-        if self.visible:
-            self.frame_info.withdraw()
-        else:
-            self.frame_info.deiconify()
-        self.visible = not self.visible
-
-    def on_closing(self):
-        self.visible = False
-        self.frame_info.withdraw()
 
     def remove_signal_sockets(self):
         self.executable = False
@@ -325,7 +307,13 @@ class INode(CanvasElement, Service):
         self.menu.post(event.x_root, event.y_root)
 
     def add_menu(self):
-        self.menu.add_command(label='Контроль', command=self.add_signal)
+        if self.strong_control:
+            self.with_signals = False
+            self.add_signal()
+            self.with_signals = True
+        else:
+            self.menu.add_command(label='Контроль', command=self.add_signal)
+
         self.menu.add_command(label='Информация    \u003F', command=self.show_info)
         self.menu.add_command(label='Дублировать    +', command=self.add_clone)
         self.menu.add_command(label='Показать Код', command=self.show_code)
@@ -358,6 +346,7 @@ class INode(CanvasElement, Service):
             self.add_enter_socket('go', self.palette['SIGNAL'], -18, -height_e)
             self.add_output_socket('go', self.palette['SIGNAL'], width + 15, -height_o)
 
+        self.executable = False
         for item in self.load_data.keys():
             if item.endswith('enter'):
                 name= item.split('_')[0]
@@ -367,6 +356,7 @@ class INode(CanvasElement, Service):
             if item.endswith('output'):
                 name = item.split('_')[0]
                 self.output_sockets[name].set_value(self.load_data[item])
+        self.executable = True
 
     def max_height(self):
         return max(self.enter_height, self.output_height) + self.height

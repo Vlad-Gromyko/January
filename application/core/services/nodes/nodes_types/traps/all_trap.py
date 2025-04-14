@@ -12,37 +12,26 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Номер', self.palette['NUM'])
-
-        self.add_output_socket('X', self.palette['NUM'])
-        self.add_output_socket('Y', self.palette['NUM'])
-        self.add_output_socket('Z', self.palette['NUM'])
-        self.add_output_socket('W', self.palette['NUM'])
         self.add_output_socket('[]', self.palette['vector1d'])
         self.load_data = kwargs
+
+        self.strong_control = True
 
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        num = arguments['Номер']
 
         traps = self.event_bus.get_field('Traps')
 
-        trap = traps[int(num)]
-
-        self.output_sockets['X'].set_value(trap[0])
-        self.output_sockets['Y'].set_value(trap[1])
-        self.output_sockets['Z'].set_value(trap[2])
-        self.output_sockets['W'].set_value(trap[3])
-        self.output_sockets['[]'].set_value(trap)
+        self.output_sockets['[]'].set_value(traps)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Ловушка', 'traps'
+        return Node, 'Все ловушки', 'traps'
 
     @staticmethod
     def possible_to_create():

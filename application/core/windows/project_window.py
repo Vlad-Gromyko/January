@@ -45,7 +45,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         ctk.CTkLabel(self.tabs.tab('Камера'), text='Порт: ').grid(row=0, column=0, padx=10, pady=10)
         self.camera_port = ctk.CTkEntry(self.tabs.tab('Камера'), width=100)
-        self.camera_port.insert(0, '1')
+        self.camera_port.insert(0, '0')
         self.camera_port.grid(row=0, column=1, padx=10, pady=10)
 
         ctk.CTkLabel(self.tabs.tab('Камера'), text='Пиксель (мкм): ').grid(row=1, column=0, padx=10, pady=10)
@@ -55,7 +55,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         ctk.CTkLabel(self.tabs.tab('Камера'), text='Разрешение: ').grid(row=2, column=0, padx=10, pady=10)
         self.modeling_width = ctk.CTkEntry(self.tabs.tab('Камера'), width=100)
-        self.modeling_width.insert(0, '200')
+        self.modeling_width.insert(0, '2000')
         self.modeling_width.grid(row=2, column=1, padx=10, pady=10)
 
         ctk.CTkLabel(self.tabs.tab('SLM'), text='X: ').grid(row=0, column=0, padx=10, pady=10)

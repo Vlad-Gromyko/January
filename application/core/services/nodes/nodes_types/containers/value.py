@@ -56,11 +56,6 @@ class Node(INode):
 
         self.output_sockets[''].set_value(None)
 
-    def run(self):
-        super().run()
-
-        self.output_sockets[''].set_value(self.editor.containers[self.vector_name])
-
     def combo_changed(self, word):
 
         self.event_bus.raise_event(
@@ -109,6 +104,7 @@ class Node(INode):
 
         self.event_bus.raise_event(
             Event('Value Updated', {'name': self.vector_name, 'value': arguments[''], 'tab': self.editor}))
+        print(arguments[''])
 
         self.ready_to_execute = True
 
@@ -126,7 +122,7 @@ class Node(INode):
         return False
 
     def prepare_save_spec(self):
-        data = {}
+        data = {'name': self.vector_name}
         saves = self.saves_dict()
         save = {**data, **saves}
         return __file__, self.x, self.y, save, self.special_id, self.with_signals

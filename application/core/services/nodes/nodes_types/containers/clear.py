@@ -14,6 +14,8 @@ class Node(INode):
 
         self.load_data = kwargs
 
+        self.strong_control = True
+
     def execute(self):
         arguments = self.get_func_inputs()
 

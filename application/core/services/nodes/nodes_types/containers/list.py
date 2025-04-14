@@ -15,6 +15,7 @@ class Node(INode):
 
         self.add_output_socket('Вектор', self.palette['vector1d'])
         self.load_data = kwargs
+
     def execute(self):
         arguments = self.get_func_inputs()
 

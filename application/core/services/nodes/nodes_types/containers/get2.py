@@ -17,6 +17,8 @@ class Node(INode):
 
         self.add_output_socket('Элемент', self.palette['ANY'])
         self.load_data = kwargs
+
+        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 

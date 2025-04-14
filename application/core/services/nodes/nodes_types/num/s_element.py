@@ -10,9 +10,6 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('', self.palette['SIGNAL'])
-        self.add_output_socket('', self.palette['SIGNAL'])
-
         self.add_enter_socket('N', self.palette['HOLOGRAM'])
         self.add_enter_socket('M', self.palette['HOLOGRAM'])
 
@@ -26,6 +23,7 @@ class Node(INode):
 
         value = np.sum(np.diff(holo1, axis=0, append=0) * np.diff(holo2, axis=0, append=0) + np.diff(holo1, axis=1, append=0) * np.diff(holo2, axis=1, append=0))
         value = value / np.shape(holo1)[0] / np.shape(holo1)[1]
+
 
         self.output_sockets['Значение'].set_value(value)
         if 'go' in self.output_sockets.keys():

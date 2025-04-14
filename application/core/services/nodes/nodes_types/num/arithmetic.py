@@ -31,7 +31,7 @@ class Node(INode):
         arguments = self.get_func_inputs()
 
         self.output_sockets['+'].set_value(float(arguments['A']) + float(arguments['B']))
-        self.output_sockets['-'].set_value(float(arguments['A']) / float(arguments['B']))
+        self.output_sockets['-'].set_value(float(arguments['A']) - float(arguments['B']))
         self.output_sockets['*'].set_value(float(arguments['A']) * float(arguments['B']))
         if arguments['B'] != 0:
             self.output_sockets['/'].set_value(float(arguments['A']) / float(arguments['B']))

@@ -19,13 +19,14 @@ class Node(INode):
 
         self.load_data = kwargs
 
+        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 
 
         vector = arguments['Матрица'].copy()
-        num1 = arguments['Строка']
-        num2 = arguments['Столбец']
+        num1 = int(arguments['Строка'])
+        num2 = int(arguments['Столбец'])
         element = arguments['Элемент']
 
         vector[num1][num2] = element
