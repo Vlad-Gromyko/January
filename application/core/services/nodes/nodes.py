@@ -131,8 +131,8 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         if self.active_tab:
             self.active_tab.canvas.grid(row=1, column=0, sticky='nsew', columnspan=2)
 
-    def add_node(self, node, special_id=None, x=300, y=300, control=False, **kwargs):
-        self.active_tab.add_node(node, special_id, x, y, control, **kwargs)
+    def add_node(self, node, special_id=None, x=300, y=300, control=False, execute=True, **kwargs):
+        self.active_tab.add_node(node, special_id, x, y, control, execute, **kwargs)
 
     def set_project(self, path):
         self.config = configparser.ConfigParser()
@@ -173,7 +173,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                     file = str(Path(__file__).parent)
 
                     node = self.dynamic_import(Path(file + '/' + str(loaded_path)))
-                    self.add_node(node, loaded_id, loaded_x, loaded_y, loaded_control, **loaded_kwargs)
+                    self.add_node(node, loaded_id, loaded_x, loaded_y, loaded_control, False, **loaded_kwargs)
 
                 elif f.split('.')[-1] == 'txt':
                     wires = dir_path + '/' + f
@@ -181,12 +181,14 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         if wires:
             self.load_wires(wires)
 
+        for node in self.active_tab.nodes:
+            node.executable = True
+
     def load_containers(self, path):
         for file in os.listdir(path):
             with open(path + '/' + file, 'rb') as f:
                 self.active_tab.containers[file.split('.')[0]] = pickle.load(f)
 
-        print(self.active_tab.containers)
 
     def load_wires(self, path):
         with open(path, "r") as file:
@@ -255,7 +257,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
 
 class Wire(Service):
-    def __init__(self, editor, tab_name, canvas, first, second):
+    def __init__(self, editor, tab_name, canvas, first, second, trigger=True):
         super().__init__()
         self.editor = editor
         self.tab_name = tab_name
@@ -271,7 +273,7 @@ class Wire(Service):
 
         self.draw()
 
-        if self.output.get_value() is not None:
+        if self.output.get_value() is not None and trigger:
             self.kick_value(self.output.get_value())
 
     def save_project(self, path):
@@ -621,7 +623,7 @@ class CanvasTab(Service, ctk.CTkFrame):
             node = self.socket_output_to_node_IDs[tag]
             return node.output_sockets_ovals[tag]
 
-    def add_node(self, node, special_id=None, x=300, y=300, control=False, **kwargs):
+    def add_node(self, node, special_id=None, x=300, y=300, control=False, execute=True, **kwargs):
 
         spec = node.create_info()
 
@@ -633,6 +635,7 @@ class CanvasTab(Service, ctk.CTkFrame):
         node = node(number, self.config, self, self.canvas, x, y, control, spec[1],
                     spec[2], **kwargs)
 
+        node.executable = execute
         node.run()
 
         if len(self.nodes) > 0:

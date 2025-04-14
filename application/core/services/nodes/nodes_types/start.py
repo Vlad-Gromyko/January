@@ -37,4 +37,7 @@ class Node(INode):
         return Node, 'Старт', 'program'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

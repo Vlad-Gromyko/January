@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import numpy as np
+from numpy.ma.core import array
 
 from application.core.services.nodes.node import INode
 from application.widgets.maskwidget import MaskLabel
@@ -15,7 +16,7 @@ class Node(INode):
 
         self.add_enter_socket('Заряд', self.palette['NUM'])
         self.add_output_socket('', self.palette['HOLOGRAM'])
-
+        self.load_data = kwargs
         self.widget_width = 200
         self.widget_height = 130
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
@@ -25,6 +26,12 @@ class Node(INode):
 
         self.mask_label = MaskLabel(frame_widgets, Mask(np.zeros((1200, 1920))), size_scale=1 / 10)
         self.mask_label.grid(padx=5, pady=5)
+
+        self.array = None
+        if 'holo' in kwargs.keys():
+            self.array = kwargs['holo']
+            self.mask_label.set_mask(Mask(self.array))
+            self.output_sockets[''].set_value(Mask(self.array))
 
     def execute(self):
         arguments = self.get_func_inputs()
@@ -44,6 +51,8 @@ class Node(INode):
 
         phi = np.flip(phi, 1)
 
+        self.array = phi
+
         mask = Mask(phi * arguments['Заряд'])
 
         self.mask_label.set_mask(mask)
@@ -58,4 +67,7 @@ class Node(INode):
         return Node, 'Вихрь', 'hologram'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

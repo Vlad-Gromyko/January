@@ -101,8 +101,6 @@ class Socket(CanvasElement):
         if self.enter:
             self.node.try_execute()
 
-
-
     def delete_socket(self):
         self.canvas.delete(self.oval_ID)
         self.canvas.delete(self.text_ID)
@@ -199,8 +197,9 @@ class INode(CanvasElement, Service):
 
         self.with_signals = control
 
+        self.executable = True
 
-
+        self.load_data = kwargs
 
     def show_and_hide(self):
         if self.visible:
@@ -214,9 +213,13 @@ class INode(CanvasElement, Service):
         self.frame_info.withdraw()
 
     def remove_signal_sockets(self):
+        self.executable = False
         for enter in self.enter_sockets.values():
+
             if enter.color == self.palette['SIGNAL']:
+
                 enter.set_value(None)
+        self.executable = True
 
     @staticmethod
     @abstractmethod
@@ -228,7 +231,21 @@ class INode(CanvasElement, Service):
         return True
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals
+
+    def saves_dict(self):
+        enters = dict()
+        for item in self.enter_sockets.values():
+            enters[item.name + '_enter'] = item.get_value()
+
+        outputs = dict()
+        for item in self.output_sockets.values():
+            outputs[item.name + '_output'] = item.get_value()
+
+        return {**enters, **outputs}
 
     def choose(self):
         self.chosen_one = True
@@ -248,34 +265,35 @@ class INode(CanvasElement, Service):
         return func_inputs
 
     def try_execute(self):
-        go = True
-        white_go = False
-        whites = []
+        if self.executable:
+            go = True
+            white_go = False
+            whites = []
 
-        for item in self.enter_sockets.values():
+            for item in self.enter_sockets.values():
 
-            if item.get_value() is None and item.color != self.palette['SIGNAL']:
-                go = False
+                if item.get_value() is None and item.color != self.palette['SIGNAL']:
+                    go = False
 
-            if item.color == self.palette['SIGNAL']:
-                whites.append(item.get_value())
+                if item.color == self.palette['SIGNAL']:
+                    whites.append(item.get_value())
 
-        # print('WHITES', whites, go)
-        if any(whites) or len(whites) == 0:
-            white_go = True
-            # print('GGG')
+            # print('WHITES', whites, go)
+            if any(whites) or len(whites) == 0:
+                white_go = True
+                # print('GGG')
 
-        if go and white_go:
-            # print('execute')
-            self.choose()
-            circ = self.canvas.create_oval(self.x - 10, self.y - 10, self.x + 10, self.y + 10, fill="#00FF00")
-            self.canvas.update_idletasks()
-            self.execute()
-            self.canvas.delete(circ)
-            self.no_choose()
-            for name in self.output_sockets.keys():
-                if self.output_sockets[name].color == self.palette['SIGNAL']:
-                    self.output_sockets[name].set_value(None)
+            if go and white_go:
+                # print('execute')
+                self.choose()
+                circ = self.canvas.create_oval(self.x - 10, self.y - 10, self.x + 10, self.y + 10, fill="#00FF00")
+                self.canvas.update_idletasks()
+                self.execute()
+                self.canvas.delete(circ)
+                self.no_choose()
+                for name in self.output_sockets.keys():
+                    if self.output_sockets[name].color == self.palette['SIGNAL']:
+                        self.output_sockets[name].set_value(None)
 
     def execute(self):
         pass
@@ -339,6 +357,16 @@ class INode(CanvasElement, Service):
             height_o = self.output_height + self.height - 3
             self.add_enter_socket('go', self.palette['SIGNAL'], -18, -height_e)
             self.add_output_socket('go', self.palette['SIGNAL'], width + 15, -height_o)
+
+        for item in self.load_data.keys():
+            if item.endswith('enter'):
+                name= item.split('_')[0]
+                self.enter_sockets[name].set_value(self.load_data[item])
+
+        for item in self.load_data.keys():
+            if item.endswith('output'):
+                name = item.split('_')[0]
+                self.output_sockets[name].set_value(self.load_data[item])
 
     def max_height(self):
         return max(self.enter_height, self.output_height) + self.height

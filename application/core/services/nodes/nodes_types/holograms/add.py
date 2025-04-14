@@ -16,7 +16,7 @@ class Node(INode):
         self.add_enter_socket('B', self.palette['HOLOGRAM'])
 
         self.add_output_socket('', self.palette['HOLOGRAM'])
-
+        self.load_data = kwargs
 
     def execute(self):
         arguments = self.get_func_inputs()
@@ -38,4 +38,7 @@ class Node(INode):
         return True
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

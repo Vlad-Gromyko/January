@@ -16,7 +16,7 @@ class Node(INode):
         self.add_output_socket('-', self.palette['ANY'])
         self.add_output_socket('*', self.palette['ANY'])
         self.add_output_socket('/', self.palette['ANY'])
-
+        self.load_data = kwargs
         self.widget_width = 120
         self.widget_height = 25
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
@@ -42,5 +42,9 @@ class Node(INode):
     @staticmethod
     def create_info():
         return Node, 'A ~ B', 'math'
+
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

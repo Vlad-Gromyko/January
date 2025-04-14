@@ -15,7 +15,7 @@ class Node(INode):
         self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
 
         self.add_output_socket('Интенсивность', self.palette['CAMERA_SHOT'])
-
+        self.load_data = kwargs
         self.field = None
         self.wave = None
         self.focus = None
@@ -80,4 +80,7 @@ class Node(INode):
         return Node, 'Линза', 'camera'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

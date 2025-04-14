@@ -17,7 +17,7 @@ class Node(INode):
         self.add_enter_socket('M', self.palette['HOLOGRAM'])
 
         self.add_output_socket('Значение', self.palette['NUM'])
-
+        self.load_data = kwargs
     def execute(self):
         arguments = self.get_func_inputs()
 
@@ -36,4 +36,7 @@ class Node(INode):
         return Node, 'S (N, M)', 'math'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

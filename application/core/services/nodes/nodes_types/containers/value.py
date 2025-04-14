@@ -13,7 +13,7 @@ class Node(INode):
         super().__init__(special_id, config, editor, canvas, x, y, control, text, theme)
 
         self.special_id = special_id
-
+        self.load_data = kwargs
         if 'value_type' in kwargs.keys():
             print(kwargs)
             self.value_type = kwargs['value_type']
@@ -126,5 +126,7 @@ class Node(INode):
         return False
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {'name': self.vector_name,
-                                          'value_type': self.value_type}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

@@ -11,7 +11,7 @@ class Node(INode):
 
         self.add_enter_socket('', self.palette['NUM'])
         self.add_output_socket('', self.palette['NUM'])
-
+        self.load_data = kwargs
         self.widget_width = 120
         self.widget_height = 25
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
@@ -35,5 +35,9 @@ class Node(INode):
     @staticmethod
     def create_info():
         return Node, 'Повторитель', 'math'
+
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

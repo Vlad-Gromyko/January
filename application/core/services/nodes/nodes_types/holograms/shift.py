@@ -16,7 +16,7 @@ class Node(INode):
         self.add_enter_socket('X (мкм)', self.palette['NUM'])
         self.add_enter_socket('Y (мкм)', self.palette['NUM'])
         self.add_output_socket('', self.palette['HOLOGRAM'])
-
+        self.load_data = kwargs
         self.widget_width = 200
         self.widget_height = 130
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
@@ -71,4 +71,7 @@ class Node(INode):
         return Node, 'Смещение', 'hologram'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

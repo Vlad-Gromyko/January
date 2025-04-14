@@ -16,13 +16,14 @@ class Node(INode):
 
         self.add_output_socket('X', self.palette['NUM'])
         self.add_output_socket('Y', self.palette['NUM'])
+        self.load_data = kwargs
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        shot = arguments['Снимок']
+        shot = np.asarray(arguments['Снимок'])
 
-        x, y = np.shape(shot)
+        y, x = np.shape(shot)
 
         x = np.linspace(0, x, x)
         y = np.linspace(0, y, y)
@@ -47,4 +48,7 @@ class Node(INode):
         return True
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

@@ -14,7 +14,7 @@ class Node(INode):
 
         self.add_output_socket('Тело Цикла', self.palette['SIGNAL'])
         self.add_output_socket('Индекс', self.palette['NUM'])
-
+        self.load_data = kwargs
 
     def execute(self):
         arguments = self.get_func_inputs()
@@ -33,5 +33,9 @@ class Node(INode):
     @staticmethod
     def create_info():
         return Node, 'For Range', 'program'
+
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

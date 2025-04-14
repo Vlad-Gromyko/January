@@ -1,6 +1,8 @@
 import customtkinter as ctk
 import tkinter
 
+from scipy.constants import value
+
 from application.core.services.nodes.node import INode
 
 
@@ -11,11 +13,14 @@ class Node(INode):
         self.special_id = special_id
 
         self.add_output_socket('', self.palette['NUM'])
+        self.load_data = kwargs
+        entry = 1
+        if 'value' in kwargs.keys():
+            entry = kwargs['value']
 
-        value = 1
         sv = tkinter.StringVar()
         self.entry = ctk.CTkEntry(self.canvas, width=50, textvariable=sv)
-        self.entry.insert(0, str(value))
+        self.entry.insert(0, str(entry))
 
         self.frame_IDs['entry'] = self.canvas.create_window(self.x, self.y + self.height, window=self.entry,
                                                             anchor=ctk.NW)
@@ -24,10 +29,10 @@ class Node(INode):
         self.execute()
 
     def execute(self):
-        value = (self.entry.get())
+        entry = (self.entry.get())
         try:
-            value = float(value)
-            self.output_sockets[''].set_value(float(value))
+            entry = float(entry)
+            self.output_sockets[''].set_value(float(entry))
             if 'go' in self.output_sockets.keys():
                 self.output_sockets['go'].set_value(True)
         except ValueError:
@@ -38,4 +43,7 @@ class Node(INode):
         return Node, 'Число', 'math'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals

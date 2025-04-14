@@ -11,24 +11,23 @@ class Node(INode):
         self.add_enter_socket('Фон', self.palette['SIGNAL'])
         self.add_enter_socket('Снимок', self.palette['SIGNAL'])
 
-
         self.add_output_socket('Снимок', self.palette['CAMERA_SHOT'])
         self.add_output_socket('Фон', self.palette['CAMERA_SHOT'])
         self.add_output_socket('Снимок - Фон', self.palette['CAMERA_SHOT'])
 
+        self.load_data = kwargs
 
     def execute(self):
         arguments = self.get_func_inputs()
-
         if arguments['Снимок'] is not None:
             self.event_bus.raise_event(Event('Take Shot'))
-        else:
+
+        elif arguments['Фон'] is not None:
             self.event_bus.raise_event(Event('Take Back'))
 
         back = self.event_bus.get_field('Back')
         shot = self.event_bus.get_field('Shot')
         shot_back = self.event_bus.get_field('Shot - Back')
-
 
         self.output_sockets['Фон'].set_value(back)
         self.output_sockets['Снимок'].set_value(shot)
@@ -42,4 +41,18 @@ class Node(INode):
         return Node, 'Камера', 'camera'
 
     def prepare_save_spec(self):
-        return __file__, self.x, self.y, {}, self.special_id, self.with_signals
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals
+
+    def saves_dict(self):
+        enters = dict()
+        for item in self.enter_sockets.values():
+            enters[item.name + '_enter'] = item.get_value()
+
+        outputs = dict()
+        for item in self.output_sockets.values():
+            outputs[item.name + '_output'] = item.get_value()
+
+        return {**enters, **outputs}
