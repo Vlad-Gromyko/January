@@ -197,6 +197,7 @@ class Atlas(Service, ctk.CTkToplevel):
             os.mkdir(path)
         if not os.path.exists(path + '/' + self.name):
             os.mkdir(path + '/' + self.name)
+            print(path + '/' + self.name)
 
         for counter, item in enumerate(self.cages):
             array = item.mask.get_mask().get_array()

@@ -102,8 +102,8 @@ class EventBus:
             folder_to_hyperion(event.get_value(), event.get_value() + '.hyperion')
             shutil.rmtree(event.get_value())
             print('Saved')
-        if event.get_name() == 'Load':
-            shutil.rmtree(event.get_value().split('.')[0])
+        #if event.get_name() == 'Load':
+           # shutil.rmtree(event.get_value().split('.')[0])
         return all(answer)
 
 
