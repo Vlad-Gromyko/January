@@ -43,7 +43,7 @@ class Node(INode):
         return Node, 'Число', 'math'
 
     def prepare_save_spec(self):
-        data = {}
+        data = {'value': self.entry.get()}
         saves = self.saves_dict()
         save = {**data, **saves}
         return __file__, self.x, self.y, save, self.special_id, self.with_signals

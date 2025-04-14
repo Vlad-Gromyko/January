@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 
+from scipy.constants import value
+
 from application.widgets.maskwidget import MaskLabel
 
 from tkinterdnd2 import TkinterDnD, DND_ALL
-
+import os, struct, shutil
 
 class Event:
     def __init__(self, name: str, value=None):
@@ -12,6 +14,9 @@ class Event:
 
     def get_value(self):
         return self._value
+
+    def set_value(self, value):
+        self._value = value
 
     def get_name(self) -> str:
         return self._name
@@ -83,11 +88,75 @@ class EventBus:
     def raise_event(self, event: Event):
         if event.get_name() == 'Load':
             self.project_path = event.get_value()
+            print(event.get_value())
+            name = event.get_value()
+            hyperion_to_folder(event.get_value(), event.get_value().split('.')[0])
+            event.set_value(event.get_value().split('.')[0])
+
 
         print(event.get_name())
         answer = []
         for service_name in self.services:
             answer.append(service_name.raise_event(event))
         if event.get_name() == 'Save Project':
+            folder_to_hyperion(event.get_value(), event.get_value() + '.hyperion')
+            shutil.rmtree(event.get_value())
             print('Saved')
+        if event.get_name() == 'Load':
+            shutil.rmtree(event.get_value().split('.')[0])
         return all(answer)
+
+
+def folder_to_hyperion(folder_path, output_file):
+    with open(output_file, 'wb') as f_out:
+        # Записываем сигнатуру формата (например, "VLAD")
+        f_out.write(b'HYPE')
+
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, folder_path)
+
+                # Читаем содержимое файла
+                with open(file_path, 'rb') as f_in:
+                    content = f_in.read()
+
+                # Записываем:
+                # 1. Длину пути (4 байта)
+                # 2. Сам путь (в UTF-8)
+                # 3. Длину содержимого (4 байта)
+                # 4. Само содержимое
+                path_bytes = rel_path.encode('utf-8')
+                f_out.write(struct.pack('I', len(path_bytes)))  # Длина пути
+                f_out.write(path_bytes)  # Путь
+                f_out.write(struct.pack('I', len(content)))  # Длина данных
+                f_out.write(content)
+
+
+def hyperion_to_folder(input_file, output_folder):
+    os.makedirs(output_folder, exist_ok=True)
+
+    with open(input_file, 'rb') as f_in:
+        # Проверяем сигнатуру
+        signature = f_in.read(4)
+        if signature != b'HYPE':
+            raise ValueError("Неверный формат файла!")
+
+        while True:
+            # Читаем путь
+            len_path_bytes = f_in.read(4)
+            if not len_path_bytes:
+                break  # Конец файла
+
+            len_path = struct.unpack('I', len_path_bytes)[0]
+            path = f_in.read(len_path).decode('utf-8')
+
+            # Читаем данные
+            len_content = struct.unpack('I', f_in.read(4))[0]
+            content = f_in.read(len_content)
+
+            # Сохраняем файл
+            full_path = os.path.join(output_folder, path)
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            with open(full_path, 'wb') as f_out:
+                f_out.write(content)

@@ -3,7 +3,7 @@ from tkinter import filedialog
 from application.core.events import Service, Event
 import configparser
 import numpy as np
-import os
+import os, struct
 from application.core.services.nodes.nodes_types.start import Node
 
 
@@ -145,26 +145,23 @@ class ProjectWindow(Service, ctk.CTkToplevel):
         self.project_path = path
         self.withdraw()
 
-        self.event_bus.raise_event(Event('Load', value=path))
+        folder_to_hyperion(path, path+'.hyperion')
+
+        self.event_bus.raise_event(Event('Load', value=path + '.hyperion'))
 
         self.event_bus.raise_event(Event('Canvas Add Node', Node))
         self.event_bus.raise_event(Event('Project Loaded'))
 
-        ar = np.zeros((1200, 1920))
 
-        # self.event_bus.raise_event(Event('Add Atlas', value={'text': 'TEST', 'mask': Mask(ar)}))
-        # self.event_bus.raise_event(Event('Canvas Add Node', value=Parameter))
-        # self.event_bus.raise_event(Event('Canvas Add Node', value=NumNode))
-        # self.event_bus.raise_event(Event('Take Shot'))
 
     def open_project(self):
-        ask = filedialog.askdirectory()
+        ask = filedialog.askopenfile(filetypes=[("Hyperion Project File", "*.hyperion")])
         if ask:
-            self.project_path = ask
+            self.project_path = str(ask.name)
             self.write_config()
             self.withdraw()
 
-            self.event_bus.raise_event(Event('Load', value=ask))
+            self.event_bus.raise_event(Event('Load', value=ask.name))
 
             self.event_bus.raise_event(Event('Project Loaded'))
 
@@ -181,3 +178,28 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
     def start_service(self, event):
         pass
+
+def folder_to_hyperion(folder_path, output_file):
+    with open(output_file, 'wb') as f_out:
+        # Записываем сигнатуру формата (например, "VLAD")
+        f_out.write(b'HYPE')
+
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, folder_path)
+
+                # Читаем содержимое файла
+                with open(file_path, 'rb') as f_in:
+                    content = f_in.read()
+
+                # Записываем:
+                # 1. Длину пути (4 байта)
+                # 2. Сам путь (в UTF-8)
+                # 3. Длину содержимого (4 байта)
+                # 4. Само содержимое
+                path_bytes = rel_path.encode('utf-8')
+                f_out.write(struct.pack('I', len(path_bytes)))  # Длина пути
+                f_out.write(path_bytes)  # Путь
+                f_out.write(struct.pack('I', len(content)))  # Длина данных
+                f_out.write(content)

@@ -630,8 +630,6 @@ class CanvasTab(Service, ctk.CTkFrame):
         else:
             number = self.supreme_leader_node
 
-        print('pppppp', number)
-
         node = node(number, self.config, self, self.canvas, x, y, control, spec[1],
                     spec[2], **kwargs)
 
