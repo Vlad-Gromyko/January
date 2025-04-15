@@ -19,8 +19,9 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
+        vector = arguments['Контейнер'].copy()
 
-        for counter, item in enumerate(arguments['Контейнер']):
+        for counter, item in enumerate(vector):
             self.output_sockets['Тело Цикла'].set_value(None)
 
             self.output_sockets['Индекс'].set_value(counter)

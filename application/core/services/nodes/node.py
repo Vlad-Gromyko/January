@@ -81,11 +81,12 @@ class Socket(CanvasElement):
 
             editor.socket_output_to_node_IDs[self.oval_ID] = node
 
-    def set_color(self, color):
+    def set_color(self, color, delete_wires=True):
         self.color = color
         self.canvas.itemconfig(self.oval_ID, fill=color)
-        for wire in self.wires:
-            wire.shut_wire()
+        if delete_wires:
+            for wire in self.wires:
+                wire.shut_wire()
 
     def get_value(self):
 
@@ -184,8 +185,6 @@ class INode(CanvasElement, Service):
         self.chosen_one = False
         self.visible = False
 
-
-
         self.with_signals = control
         self.strong_control = False
 
@@ -193,13 +192,11 @@ class INode(CanvasElement, Service):
 
         self.load_data = kwargs
 
-
     def remove_signal_sockets(self):
         self.executable = False
         for enter in self.enter_sockets.values():
 
             if enter.color == self.palette['SIGNAL']:
-
                 enter.set_value(None)
         self.executable = True
 
@@ -349,7 +346,7 @@ class INode(CanvasElement, Service):
         self.executable = False
         for item in self.load_data.keys():
             if item.endswith('enter'):
-                name= item.split('_')[0]
+                name = item.split('_')[0]
                 self.enter_sockets[name].set_value(self.load_data[item])
 
         for item in self.load_data.keys():

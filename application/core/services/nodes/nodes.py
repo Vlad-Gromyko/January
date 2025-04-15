@@ -362,7 +362,7 @@ class CanvasTab(Service, ctk.CTkFrame):
                                           command=self.close_me)
         self.button_close.grid(row=0, column=1, sticky='ew')
 
-        self.canvas = tkinter.Canvas(self.canvas_place, width=1650, height=900, bg='#363636')
+        self.canvas = tkinter.Canvas(self.canvas_place, width=1900, height=1000, bg='#363636')
         self.canvas.grid(row=1, column=0, sticky='nsew')
 
         self.events_reactions['Canvas Selected'] = lambda event: self.it_is_me(event.get_value())

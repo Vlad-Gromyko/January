@@ -14,8 +14,8 @@ class Node(INode):
 
         self.special_id = special_id
         self.load_data = kwargs
+
         if 'value_type' in kwargs.keys():
-            print(kwargs)
             self.value_type = kwargs['value_type']
         else:
             self.value_type = 'num'
@@ -23,6 +23,10 @@ class Node(INode):
         self.add_output_socket('', self.palette[self.value_type], self.width + 13)
 
         self.add_enter_socket('', self.palette[self.value_type], - 18)
+
+
+        self.output_sockets[''].set_color(self.palette[self.value_type], delete_wires=False)
+        self.enter_sockets[''].set_color(self.palette[self.value_type], delete_wires=False)
 
         self.enter_height = 0
         self.output_height = 0
@@ -46,6 +50,7 @@ class Node(INode):
         if 'name' in kwargs.keys():
             self.vector_label.configure(text=kwargs['name'])
             self.vector_name = kwargs['name']
+
 
         self.events_reactions['Value Updated'] = lambda event: self.vector_updated(event)
         self.events_reactions['Value Type Changed'] = lambda event: self.change_type(event)
@@ -122,7 +127,7 @@ class Node(INode):
         return False
 
     def prepare_save_spec(self):
-        data = {'name': self.vector_name}
+        data = {'name': self.vector_name, 'value_type': self.value_type}
         saves = self.saves_dict()
         save = {**data, **saves}
         return __file__, self.x, self.y, save, self.special_id, self.with_signals

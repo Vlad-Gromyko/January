@@ -28,7 +28,7 @@ class Node(INode):
         element = arguments['Элемент']
 
         vector[num] = element
-        print(num, element, vector)
+
 
         self.output_sockets['Вектор'].set_value(vector)
 
