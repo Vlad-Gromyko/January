@@ -18,7 +18,10 @@ class SplashWindow(Service, ctk.CTkToplevel):
         self.geometry(f'{image.width}x{image.height}')
 
         self.events_reactions['Load'] = lambda event: self.show_splash()
-        self.events_reactions['Project Loaded'] = lambda event: self.destroy()
+        self.events_reactions['Project Loaded'] = lambda event: self.withdraw()
+
+        self.events_reactions['Show Splash'] = lambda event: self.show_splash()
+        self.events_reactions['Hide Splash'] = lambda event: self.withdraw()
 
         self.withdraw()
         self.overrideredirect(1)

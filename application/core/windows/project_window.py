@@ -165,6 +165,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
             self.event_bus.raise_event(Event('Project Loaded'))
 
+
     def save_project(self, path):
         config = configparser.ConfigParser()
 

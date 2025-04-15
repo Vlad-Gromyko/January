@@ -67,7 +67,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.active_tab.containers.deiconify()
 
     def plus_add_container(self):
-        ask = askstring('Добавить', 'Название Вектора:')
+        ask = askstring('Добавить', 'Название Переменной:')
         if ask:
             self.active_tab.containers[ask] = 0
             self.add_node(container.Node, name=ask)

@@ -12,7 +12,6 @@ class Node(INode):
         self.special_id = special_id
 
 
-        self.add_enter_socket('Моды', self.palette['vector1d'])
         self.add_enter_socket('S', self.palette['vector2d'])
         self.add_enter_socket('M', self.palette['vector2d'])
         self.add_enter_socket('Beta', self.palette['NUM'])
@@ -22,22 +21,21 @@ class Node(INode):
 
 
         self.load_data = kwargs
-        self.field = None
-        self.wave = None
-        self.focus = None
-        self.gauss_waist = None
 
-        self.slm_grid_size = None
-        self.slm_grid_dim = None
-
-        self.camera_grid_size = None
-        self.camera_grid_dim = None
 
 
     def execute(self):
         arguments = self.get_func_inputs()
 
+        s = np.asarray(arguments('S'))
+        m = np.asarray(arguments('M'))
+        beta = arguments('Beta')
+        sm = s.diagonal()
+        c = 1 / 4 /np.pi**2
 
+        vector = np.dot(np.linalg.inv(s), m) / 2 / c / beta - beta * np.dot(np.linalg.inv(s), sm)/2
+
+        self.output_sockets['Вектор'].set_value(vector)
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 

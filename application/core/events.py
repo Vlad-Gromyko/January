@@ -99,11 +99,13 @@ class EventBus:
         for service_name in self.services:
             answer.append(service_name.raise_event(event))
         if event.get_name() == 'Save Project':
+            self.raise_event(Event('Show Splash'))
             folder_to_hyperion(event.get_value(), event.get_value() + '.hyperion')
             shutil.rmtree(event.get_value())
             print('Saved')
         #if event.get_name() == 'Load':
            # shutil.rmtree(event.get_value().split('.')[0])
+            self.raise_event(Event('Hide Splash'))
         return all(answer)
 
 
