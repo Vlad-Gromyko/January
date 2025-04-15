@@ -120,7 +120,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Вектор', 'Container'
+        return Node, 'Переменная', 'Container'
 
     @staticmethod
     def possible_to_create():

@@ -19,22 +19,32 @@ class Mask:
         return array
 
     def __add__(self, other):
-        other_array = other.get_array()
+        if isinstance(other, Mask):
+            other_array = other.get_array()
+        else:
+            other_array = other
         new_array = self._array + other_array
         new_array = self.transform_to_2pi(new_array)
         return Mask(new_array)
 
     def __sub__(self, other):
-        other_array = other.get_array()
+        if isinstance(other, Mask):
+            other_array = other.get_array()
+        else:
+            other_array = other
         new_array = self._array - other_array
         new_array = self.transform_to_2pi(new_array)
         return Mask(new_array)
 
     def __mul__(self, other):
-        other_array = other.get_array()
+        if isinstance(other, Mask):
+            other_array = other.get_array()
+        else:
+            other_array = other
         new_array = self._array * other_array
         new_array = self.transform_to_2pi(new_array)
         return Mask(new_array)
+
 
 
 

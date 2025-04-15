@@ -15,7 +15,7 @@ class Node(INode):
         self.add_output_socket('+', self.palette['ANY'])
         self.add_output_socket('-', self.palette['ANY'])
         self.add_output_socket('*', self.palette['ANY'])
-        self.add_output_socket('/', self.palette['ANY'])
+
         self.load_data = kwargs
         self.widget_width = 120
         self.widget_height = 25
@@ -30,11 +30,10 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
-        self.output_sockets['+'].set_value(float(arguments['A']) + float(arguments['B']))
-        self.output_sockets['-'].set_value(float(arguments['A']) - float(arguments['B']))
-        self.output_sockets['*'].set_value(float(arguments['A']) * float(arguments['B']))
-        if arguments['B'] != 0:
-            self.output_sockets['/'].set_value(float(arguments['A']) / float(arguments['B']))
+        self.output_sockets['+'].set_value(arguments['A'] + arguments['B'])
+        self.output_sockets['-'].set_value(arguments['A'] - arguments['B'])
+        self.output_sockets['*'].set_value(arguments['A'] * arguments['B'])
+
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
