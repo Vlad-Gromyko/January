@@ -25,7 +25,7 @@ class Node(INode):
         self.frame_IDs['entry'] = self.canvas.create_window(self.x, self.y + self.height, window=self.entry,
                                                             anchor=ctk.NW)
 
-        sv.trace("w", lambda *args: self.execute())
+        sv.trace("w", lambda *args: self.try_execute())
         self.execute()
 
     def execute(self):

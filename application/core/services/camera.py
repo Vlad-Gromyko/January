@@ -41,6 +41,9 @@ class Camera(Service, ctk.CTkToplevel):
         self.button_back = ctk.CTkButton(f, text='Фон', command=self.take_back, width=20)
         self.button_back.grid(row=0, column=2, padx=5, pady=5)
 
+        self.button_back = ctk.CTkButton(f, text='Поток', command=self.take_stream, width=20)
+        self.button_back.grid(row=0, column=2, padx=5, pady=5)
+
         self.last_shot = None
         self.back = None
         self.clear = None
@@ -90,6 +93,20 @@ class Camera(Service, ctk.CTkToplevel):
         config = configparser.ConfigParser()
         config.read(path + '/field.ini')
         self.monitor.insert(0, config['CAMERA']['port'])
+
+    def take_stream(self):
+        port = int(self.monitor.get())
+        cap = cv2.VideoCapture(port, cv2.CAP_DSHOW)
+        while True:
+
+            ret, frame = cap.read()
+
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            cv2.imshow('Поток Камеры', frame)
+
+            if cv2.waitKey(1) == 27:
+                break
 
     def take_shot(self):
         port = int(self.monitor.get())

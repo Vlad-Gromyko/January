@@ -45,7 +45,7 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         ctk.CTkLabel(self.tabs.tab('Камера'), text='Порт: ').grid(row=0, column=0, padx=10, pady=10)
         self.camera_port = ctk.CTkEntry(self.tabs.tab('Камера'), width=100)
-        self.camera_port.insert(0, '0')
+        self.camera_port.insert(0, '1')
         self.camera_port.grid(row=0, column=1, padx=10, pady=10)
 
         ctk.CTkLabel(self.tabs.tab('Камера'), text='Пиксель (мкм): ').grid(row=1, column=0, padx=10, pady=10)
