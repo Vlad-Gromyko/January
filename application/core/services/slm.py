@@ -202,6 +202,7 @@ class SLM(Service, ctk.CTkToplevel):
             if self.checks[6].get() == 'on':
                 array = np.flipud(array)
             self.masks['total'].set_mask(Mask(array))
+            self.show()
             self.event_bus.raise_event(Event('SLM Changed'))
 
     def show(self):

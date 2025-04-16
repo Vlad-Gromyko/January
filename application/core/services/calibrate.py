@@ -32,7 +32,7 @@ class Calibrate(Service, ctk.CTkToplevel):
 
         self.check = ctk.StringVar(value="off")
         self.check_box = ctk.CTkCheckBox(self, text="Калибровочная маска",
-                                         variable=self.check, onvalue="on", offvalue="off")
+                                         variable=self.check, onvalue="on", offvalue="off", command=self.check_update)
 
         self.check_box.grid(row=0, column=0, padx=10, pady=2, sticky='ew', columnspan=2)
 
@@ -81,6 +81,13 @@ class Calibrate(Service, ctk.CTkToplevel):
         self._x = None
         self._y = None
 
+    def check_update(self):
+        if self.check.get() == 'on':
+            self.event_bus.raise_event(Event('Set SLM Calibrate', self.mask.get_mask()))
+        else:
+            self.event_bus.raise_event(Event('Set SLM Calibrate', self.mask.get_mask()))
+
+
     def move_calibrate(self, dx, dy):
         x = float(self.entry_x.get())
         y = float(self.entry_y.get())
@@ -120,6 +127,8 @@ class Calibrate(Service, ctk.CTkToplevel):
 
         if self.check.get() == 'on':
             self.event_bus.raise_event(Event('Set SLM Calibrate', mask))
+
+
 
     def on_closing(self):
         self.visible = False
