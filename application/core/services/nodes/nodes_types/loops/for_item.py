@@ -7,7 +7,7 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Вектор', self.palette['vector1d'])
+        self.add_enter_socket('Контейнер', self.palette['vector1d'])
 
 
         self.add_output_socket('Тело Цикла', self.palette['SIGNAL'])

@@ -12,7 +12,7 @@ class Node(INode):
         self.special_id = special_id
 
         self.add_enter_socket('S', self.palette['vector2d'])
-        self.add_enter_socket('M', self.palette['vector2d'])
+        self.add_enter_socket('M', self.palette['vector1d'])
         self.add_enter_socket('Beta', self.palette['NUM'])
 
         self.add_output_socket('Вектор', self.palette['vector1d'])
@@ -23,12 +23,14 @@ class Node(INode):
         arguments = self.get_func_inputs()
 
         s = np.asarray(arguments['S'])
+        s_inv = np.asarray(arguments['S'])
         m = np.asarray(arguments['M'])
         beta = arguments['Beta']
         sm = s.diagonal()
         c = 1 / 4 / np.pi ** 2
 
-        vector = np.dot(np.linalg.inv(s), m) / 2 * c / beta - beta * beta * np.dot(np.linalg.inv(s), sm) / 2
+        #vector = np.dot(np.linalg.inv(s), m) / 2 * c / beta - beta * beta * np.dot(np.linalg.inv(s), sm) / 2
+        vector = np.dot(s_inv, m) / 2 / c / beta - beta * np.dot(s_inv, sm) / 2
         vector = list(vector)
 
         self.output_sockets['Вектор'].set_value(vector)

@@ -11,7 +11,7 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Амплитуда (\u03BB)', self.palette['NUM'])
+        self.add_enter_socket('Амплитуда (lambda)', self.palette['NUM'])
 
         self.add_enter_socket('Номер', self.palette['NUM'])
 
@@ -21,7 +21,7 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
-        num = arguments['Номер'] +1
+        num = arguments['Номер'] + 1
 
         wavelength = self.event_bus.get_field('laser wavelength')
         slm_grid_dim = self.event_bus.get_field('slm width')
@@ -30,16 +30,18 @@ class Node(INode):
         (nz, mz) = lp.noll_to_zern(num)
 
         field = lp.Begin(slm_grid_size, wavelength, slm_grid_dim)
-        field = lp.Zernike(field, nz, mz, slm_grid_size / 2, A=arguments['Амплитуда (\u03BB)'], norm=True,
+        field = lp.Zernike(field, nz, mz, slm_grid_size / 2, A=arguments['Амплитуда (lambda)'], norm=True,
                            units='lam')
 
         holo = lp.Phase(field)
 
         pad = np.min(holo)
 
-        if pad< 0:
+        if pad < 0:
             holo = (holo + pad)
         holo = holo % (2 * np.pi)
+
+        holo = self.holo_cut(holo)
 
         self.output_sockets['Голограмма'].set_value(Mask(holo))
         if 'go' in self.output_sockets.keys():
@@ -57,10 +59,11 @@ class Node(INode):
 
     @staticmethod
     def holo_cut(holo):
-        rows, cols = holo.shape
+        height, width = holo.shape
 
-        size = max(rows, cols)
+        start = (height - 1200) // 2
+        end = start + 1200
 
-        result = holo[:, (max(rows, cols) - min(rows, cols)) // 2: size - (max(rows, cols) - min(rows, cols)) // 2]
+        result = holo[start: end, :]
 
         return result

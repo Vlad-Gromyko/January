@@ -109,7 +109,7 @@ class Node(INode):
 
         self.event_bus.raise_event(
             Event('Value Updated', {'name': self.vector_name, 'value': arguments[''], 'tab': self.editor}))
-        print(arguments[''])
+
 
         self.ready_to_execute = True
 

@@ -18,7 +18,11 @@ class Node(INode):
         pass
 
     def add_menu(self):
-        self.menu.add_command(label='Информация', command=self.show_info)
+        self.menu.add_command(label='Информация    \u003F', command=self.show_info)
+        self.menu.add_command(label='Дублировать    +', command=self.add_clone)
+        self.menu.add_command(label='Показать Код', command=self.show_code)
+        self.menu.add_separator()
+        self.menu.add_command(label='Удалить        \u2573', command=self.delete_node)
 
     def execute(self):
         self.output_sockets[''].set_value(True)

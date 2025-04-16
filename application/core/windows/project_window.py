@@ -145,9 +145,9 @@ class ProjectWindow(Service, ctk.CTkToplevel):
         self.project_path = path
         self.withdraw()
 
-        folder_to_hyperion(path, path+'.hyperion')
+        #folder_to_hyperion(path, path+'.hyperion')
 
-        self.event_bus.raise_event(Event('Load', value=path + '.hyperion'))
+        self.event_bus.raise_event(Event('Load', value=path))
 
         self.event_bus.raise_event(Event('Canvas Add Node', Node))
         self.event_bus.raise_event(Event('Project Loaded'))
@@ -155,13 +155,13 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
 
     def open_project(self):
-        ask = filedialog.askopenfile(filetypes=[("Hyperion Project File", "*.hyperion")])
+        ask = filedialog.askdirectory()
         if ask:
-            self.project_path = str(ask.name)
+            self.project_path = ask
             self.write_config()
             self.withdraw()
 
-            self.event_bus.raise_event(Event('Load', value=ask.name))
+            self.event_bus.raise_event(Event('Load', value=ask))
 
             self.event_bus.raise_event(Event('Project Loaded'))
 
