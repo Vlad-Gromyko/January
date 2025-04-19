@@ -49,7 +49,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Цернике - NRMS', 'hologram'
+        return Node, 'Цернике - NRMS', 'Zernike'
 
     def prepare_save_spec(self):
         data = {}

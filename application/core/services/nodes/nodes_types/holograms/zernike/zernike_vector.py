@@ -10,30 +10,39 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Вектор', self.palette['vector1d'])
-        self.add_enter_socket('Номер', self.palette['NUM'])
+        self.add_enter_socket('Длина', self.palette['NUM'])
 
+        self.add_enter_socket('Амплитуда', self.palette['NUM'])
+        self.add_enter_socket('1-ый Номер', self.palette['NUM'])
 
-        self.add_output_socket('Элемент', self.palette['ANY'])
+        self.add_output_socket('Вектор', self.palette['vector1d'])
         self.load_data = kwargs
 
-        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 
-        vector = arguments['Вектор'].copy()
+        num = int(arguments['Длина'])
+        amp = arguments['Амплитуда']
 
-        num = int(arguments['Номер'])
+        first = int(arguments['1-ый Номер'])
 
-        self.output_sockets['Элемент'].set_value(vector[num])
+        vector = []
 
+        for i in range(num):
+            self.event_bus.raise_event(Event('Calculate Zernike One', {'number': first + i,
+                                                                       'amplitude': amp}))
+            holo = self.event_bus.get_field('Last Zernike Mask')
+
+            vector.append(holo)
+
+        self.output_sockets['Вектор'].set_value(vector)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Get', 'Container'
+        return Node, 'Вектор Цернике', 'Zernike'
 
     @staticmethod
     def possible_to_create():

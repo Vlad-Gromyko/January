@@ -77,7 +77,6 @@ class EventBus:
         service.event_bus = self
 
     def get_field(self, name: str):
-        print(name)
         answer = None
         for service_name in self.services:
             if name in service_name.fields.keys():
@@ -88,13 +87,13 @@ class EventBus:
     def raise_event(self, event: Event):
         if event.get_name() == 'Load':
             self.project_path = event.get_value()
-            print(event.get_value())
+            #print(event.get_value())
             name = event.get_value()
             #hyperion_to_folder(event.get_value(), event.get_value().split('.')[0])
             #event.set_value(event.get_value().split('.')[0])
 
 
-        print(event.get_name())
+        #print(event.get_name())
         answer = []
         for service_name in self.services:
             answer.append(service_name.raise_event(event))

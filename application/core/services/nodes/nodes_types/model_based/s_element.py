@@ -1,7 +1,7 @@
+import numpy as np
+
 from application.core.events import Event
 from application.core.services.nodes.node import INode
-import customtkinter as ctk
-import time
 
 
 class Node(INode):
@@ -10,34 +10,28 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Вектор', self.palette['vector1d'])
-        self.add_enter_socket('Номер', self.palette['NUM'])
+        self.add_enter_socket('N', self.palette['HOLOGRAM'])
+        self.add_enter_socket('M', self.palette['HOLOGRAM'])
 
-
-        self.add_output_socket('Элемент', self.palette['ANY'])
+        self.add_output_socket('Значение', self.palette['NUM'])
         self.load_data = kwargs
-
-        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 
-        vector = arguments['Вектор'].copy()
+        holo1 = arguments['N'].get_array()
+        holo2 = arguments['M'].get_array()
 
-        num = int(arguments['Номер'])
+        value = np.sum(np.diff(holo1, axis=0, append=0) * np.diff(holo2, axis=0, append=0) + np.diff(holo1, axis=1, append=0) * np.diff(holo2, axis=1, append=0))
+        value = value / np.shape(holo1)[0] / np.shape(holo1)[1]
 
-        self.output_sockets['Элемент'].set_value(vector[num])
 
-
+        self.output_sockets['Значение'].set_value(value)
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Get', 'Container'
-
-    @staticmethod
-    def possible_to_create():
-        return True
+        return Node, 'S (N, M)', 'model'
 
     def prepare_save_spec(self):
         data = {}
