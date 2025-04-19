@@ -1,7 +1,7 @@
+import numpy as np
+
 from application.core.events import Event
 from application.core.services.nodes.node import INode
-import customtkinter as ctk
-import time
 
 
 class Node(INode):
@@ -10,34 +10,33 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Вектор', self.palette['vector1d'])
-        self.add_enter_socket('Номер', self.palette['NUM'])
 
+        self.add_enter_socket('Снимок', self.palette['CAMERA_SHOT'])
+        self.add_output_socket('Значение', self.palette['NUM'])
 
-        self.add_output_socket('Элемент', self.palette['ANY'])
         self.load_data = kwargs
 
-        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 
-        vector = arguments['Вектор'].copy()
+        shot = arguments['Снимок']
 
-        num = int(arguments['Номер'])
+        w, h = np.shape(shot)
 
-        self.output_sockets['Элемент'].set_value(vector[num])
+        x = np.linspace(-h/2, h/2, h)
+        y = np.linspace(-w/2, w/2, w)
+        x, y = np.meshgrid(x, y)
 
+        signal_intensity = np.sum(shot * (x ** 2 + y ** 2))
+        summ_intensity = np.sum(shot)
 
+        self.output_sockets['Значение'].set_value(signal_intensity / summ_intensity)
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Get', 'Container'
-
-    @staticmethod
-    def possible_to_create():
-        return True
+        return Node, 'MDSE', 'model'
 
     def prepare_save_spec(self):
         data = {}

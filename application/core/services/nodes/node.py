@@ -142,7 +142,10 @@ class INode(CanvasElement, Service):
 
         self.text = text
 
-        self.color_back = config['NODES_CATEGORIES'][theme]
+        if theme in config['NODES_CATEGORIES']:
+            self.color_back = config['NODES_CATEGORIES'][theme]
+        else:
+            self.color_back = config['NODES_CATEGORIES']['program']
         self.widget_width = 0
         self.widget_height = 0
 

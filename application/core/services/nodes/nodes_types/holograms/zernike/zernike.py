@@ -1,3 +1,5 @@
+import time
+
 from application.core.events import Event
 from application.core.services.nodes.node import INode
 
@@ -18,6 +20,7 @@ class Node(INode):
 
 
     def execute(self):
+        start = time.time()
         arguments = self.get_func_inputs()
 
         self.event_bus.raise_event(Event('Calculate Zernike One', {'number': arguments['Номер'],
@@ -25,6 +28,7 @@ class Node(INode):
         holo = self.event_bus.get_field('Last Zernike Mask')
 
         self.output_sockets['Голограмма'].set_value(holo)
+        print(time.time() - start)
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
@@ -32,7 +36,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Цернике', 'hologram'
+        return Node, 'Цернике', 'Zernike'
 
     def prepare_save_spec(self):
         data = {}

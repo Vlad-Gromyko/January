@@ -1,16 +1,13 @@
-import numpy as np
-
 from application.core.services.nodes.node import INode
-
+import numpy as np
 import LightPipes as lp
-
+import time
 
 class Node(INode):
     def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
         super().__init__(special_id, config, editor, canvas, x, y, control, text, theme)
 
         self.special_id = special_id
-
 
         self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
         self.add_enter_socket('Число пикселей', self.palette['NUM'])
@@ -44,21 +41,28 @@ class Node(INode):
         return square_array
 
     def execute(self):
+        start_time = time.time()
         arguments = self.get_func_inputs()
 
         holo = self.holo_box(arguments['Голограмма'].get_array())
 
-        self.wave = self.event_bus.get_field('laser wavelength')
-        self.gauss_waist = self.event_bus.get_field('laser waist')
-        self.focus = self.event_bus.get_field('optics focus')
-        self.slm_grid_dim = self.event_bus.get_field('slm width')
-        self.slm_grid_size = self.event_bus.get_field('slm width') * self.event_bus.get_field('slm pixel')
+        wave = self.event_bus.get_field('laser wavelength')
+        gauss_waist = self.event_bus.get_field('laser waist')
+        focus = self.event_bus.get_field('optics focus')
+        slm_grid_dim = self.event_bus.get_field('slm width')
 
-        self.field = lp.Begin(self.slm_grid_size, self.wave,
+        if wave != self.wave or gauss_waist != self.gauss_waist or focus != self.focus or slm_grid_dim != self.slm_grid_size:
+            self.wave = wave
+            self.gauss_waist = gauss_waist
+            self.focus = focus
+            self.slm_grid_dim = slm_grid_dim
+            self.slm_grid_size = self.slm_grid_dim * self.event_bus.get_field('slm pixel')
+
+            self.field = lp.Begin(self.slm_grid_size, self.wave,
                                   self.slm_grid_dim)
 
-        self.field = lp.GaussBeam(self.field, self.gauss_waist)
-
+            self.field = lp.GaussBeam(self.field, self.gauss_waist)
+        self.camera_grid_dim = slm_grid_dim
         self.camera_grid_dim = int(arguments['Число пикселей'])
         self.camera_grid_size = self.camera_grid_dim * float(self.config['CAMERA']['modeling_pixel_UM']) * 10 ** (
                 -6)
@@ -72,6 +76,7 @@ class Node(INode):
         result = lp.Intensity(field)
 
         self.output_sockets['Интенсивность'].set_value(result)
+
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 

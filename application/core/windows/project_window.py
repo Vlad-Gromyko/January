@@ -149,7 +149,6 @@ class ProjectWindow(Service, ctk.CTkToplevel):
 
         self.event_bus.raise_event(Event('Load', value=path))
 
-        self.event_bus.raise_event(Event('Canvas Add Node', Node))
         self.event_bus.raise_event(Event('Project Loaded'))
 
 

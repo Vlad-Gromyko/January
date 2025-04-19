@@ -24,7 +24,6 @@ class Node(INode):
 
         self.add_enter_socket('', self.palette[self.value_type], - 18)
 
-
         self.output_sockets[''].set_color(self.palette[self.value_type], delete_wires=False)
         self.enter_sockets[''].set_color(self.palette[self.value_type], delete_wires=False)
 
@@ -51,6 +50,9 @@ class Node(INode):
             self.vector_label.configure(text=kwargs['name'])
             self.vector_name = kwargs['name']
 
+        self.output_sockets[''].set_value(None)
+        if self.vector_name in self.editor.containers.keys():
+            self.output_sockets[''].set_value(self.editor.containers[self.vector_name])
 
         self.events_reactions['Value Updated'] = lambda event: self.vector_updated(event)
         self.events_reactions['Value Type Changed'] = lambda event: self.change_type(event)
@@ -58,8 +60,6 @@ class Node(INode):
         self.ready_to_execute = True
 
         self.null_types = None
-
-        self.output_sockets[''].set_value(None)
 
     def combo_changed(self, word):
 
@@ -70,14 +70,14 @@ class Node(INode):
         height = self.event_bus.get_field('slm height')
 
         null_types = {
-                      'bool': False,
-                      'num': 0,
-                      'str': '',
-                      'hologram': Mask(np.zeros((height, width))),
-                      'camera_shot': np.zeros((200, 200)),
-                      'vector1d': [],
-                      'vector2d': [[]],
-                      'any': None}
+            'bool': False,
+            'num': 0,
+            'str': '',
+            'hologram': Mask(np.zeros((height, width))),
+            'camera_shot': np.zeros((200, 200)),
+            'vector1d': [],
+            'vector2d': [[]],
+            'any': None}
 
         self.event_bus.raise_event(
             Event('Value Updated', {'name': self.vector_name, 'value': null_types[word], 'tab': self.editor}))
@@ -109,7 +109,6 @@ class Node(INode):
 
         self.event_bus.raise_event(
             Event('Value Updated', {'name': self.vector_name, 'value': arguments[''], 'tab': self.editor}))
-
 
         self.ready_to_execute = True
 

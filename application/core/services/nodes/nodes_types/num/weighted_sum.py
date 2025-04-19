@@ -1,7 +1,8 @@
-import numpy as np
-
 from application.core.events import Event
 from application.core.services.nodes.node import INode
+import customtkinter as ctk
+import time
+import numpy as np
 
 
 class Node(INode):
@@ -10,33 +11,40 @@ class Node(INode):
 
         self.special_id = special_id
 
+        self.add_enter_socket('Вектор', self.palette['vector1d'])
+        self.add_enter_socket('Вектор Весов', self.palette['vector1d'])
 
-        self.add_enter_socket('Снимок', self.palette['CAMERA_SHOT'])
-        self.add_output_socket('Значение', self.palette['NUM'])
+        self.add_output_socket('', self.palette['ANY'])
 
         self.load_data = kwargs
 
+        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 
-        shot = arguments['Снимок']
+        vector = arguments['Вектор'].copy()
+        weights = arguments['Вектор Весов'].copy()
 
-        w, h = np.shape(shot)
+        sum_weights = np.sum(weights)
 
-        x = np.linspace(-h/2, h/2, h)
-        y = np.linspace(-w/2, w/2, w)
-        x, y = np.meshgrid(x, y)
+        result = vector[0] * weights[0]
 
-        signal_intensity = np.sum(shot * (x ** 2 + y ** 2))
-        summ_intensity = np.sum(shot)
+        for i in range(1, len(vector)):
+            result = result + vector[i] * weights[i]
 
-        self.output_sockets['Значение'].set_value(signal_intensity / summ_intensity)
+
+        self.output_sockets[''].set_value(result)
+
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'MDSE', 'camera'
+        return Node, 'Weighted Sum', 'Container'
+
+    @staticmethod
+    def possible_to_create():
+        return True
 
     def prepare_save_spec(self):
         data = {}

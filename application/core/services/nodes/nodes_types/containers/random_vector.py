@@ -1,8 +1,8 @@
-import numpy as np
-
+from application.core.events import Event
 from application.core.services.nodes.node import INode
-
-import LightPipes as lp
+import customtkinter as ctk
+import time
+import numpy as np
 
 
 class Node(INode):
@@ -11,35 +11,34 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('S', self.palette['vector2d'])
-        self.add_enter_socket('M', self.palette['vector1d'])
-        self.add_enter_socket('Beta', self.palette['NUM'])
+        self.add_enter_socket('Длина', self.palette['NUM'])
+        self.add_enter_socket('Max', self.palette['NUM'])
+        self.add_enter_socket('Min', self.palette['NUM'])
 
         self.add_output_socket('Вектор', self.palette['vector1d'])
-
         self.load_data = kwargs
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        s = np.asarray(arguments['S'])
-        s_inv = np.asarray(arguments['S'])
-        m = np.asarray(arguments['M'])
-        beta = arguments['Beta']
-        sm = s.diagonal()
-        c = 1 / 4 / np.pi ** 2
+        num = arguments['Длина']
+        min_value = arguments['Min']
+        max_value = arguments['Max']
 
-        #vector = np.dot(np.linalg.inv(s), m) / 2 * c / beta - beta * beta * np.dot(np.linalg.inv(s), sm) / 2
-        vector = np.dot(s_inv, m) / 2 / c / beta - beta * np.dot(s_inv, sm) / 2
-        vector = list(vector)
+        vector =np.random.uniform(min_value, max_value, int(num))
 
-        self.output_sockets['Вектор'].set_value(vector)
+        self.output_sockets['Вектор'].set_value(list(vector))
+
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Model-Based', 'math'
+        return Node, 'Случайный Вектор', 'Container'
+
+    @staticmethod
+    def possible_to_create():
+        return True
 
     def prepare_save_spec(self):
         data = {}

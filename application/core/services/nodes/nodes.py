@@ -638,6 +638,9 @@ class CanvasTab(Service, ctk.CTkFrame):
         if len(self.nodes) > 0:
             self.nodes[-1].no_choose()
 
+        for item in self.nodes:
+            item.no_choose()
+
         node.choose()
 
         self.event_bus.add_service(node)

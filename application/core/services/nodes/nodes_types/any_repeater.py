@@ -18,14 +18,14 @@ class Node(INode):
 
         self.add_output_socket('', self.palette['ANY'])
         self.load_data = kwargs
-        self.widget_width = 300
-        self.widget_height = 300
+        self.widget_width = 500
+        self.widget_height = 500
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
         self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
                                                               anchor=ctk.NW, width=self.widget_width,
                                                               height=self.widget_height)
 
-        self.fig = Figure(figsize=(5, 5), dpi=100)
+        self.fig = Figure(figsize=(7, 7), dpi=100)
 
         self.ax = self.fig.add_subplot(111)
 
@@ -42,7 +42,7 @@ class Node(INode):
         self.ax.cla()
 
         if isinstance(value, float) or isinstance(value, int):
-            self.ax.text(0.5, 0.5, str(value), ha='center', va='center', size=40)
+            self.ax.text(0.5, 0.5, str(round(value, 3)), ha='center', va='center', size=40)
             self.ax.axis("off")
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
