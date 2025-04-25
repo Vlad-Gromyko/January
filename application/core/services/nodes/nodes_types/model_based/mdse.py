@@ -23,8 +23,12 @@ class Node(INode):
 
         w, h = np.shape(shot)
 
-        x = np.linspace(-h/2, h/2, h)
-        y = np.linspace(-w/2, w/2, w)
+        x = np.linspace(-h* float(self.config['CAMERA']['modeling_pixel_UM']) * 10 ** (
+                -6)/2, h* float(self.config['CAMERA']['modeling_pixel_UM']) * 10 ** (
+                -6)/2, h)
+        y = np.linspace(-w* float(self.config['CAMERA']['modeling_pixel_UM']) * 10 ** (
+                -6)/2, w* float(self.config['CAMERA']['modeling_pixel_UM']) * 10 ** (
+                -6)/2, w)
         x, y = np.meshgrid(x, y)
 
         signal_intensity = np.sum(shot * (x ** 2 + y ** 2))
