@@ -42,7 +42,7 @@ class Node(INode):
         self.ax.cla()
 
         if isinstance(value, float) or isinstance(value, int):
-            self.ax.text(0.5, 0.5, str(round(value, 3)), ha='center', va='center', size=40)
+            self.ax.text(0.5, 0.5, str(value), ha='center', va='center', size=40)
             self.ax.axis("off")
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
