@@ -11,10 +11,10 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Амплитуда', self.palette['NUM'])
-        self.add_enter_socket('Номер', self.palette['NUM'])
+        self.add_enter_socket('Вектор Весов', self.palette['vector1d'])
+        self.add_enter_socket('1-й Номер', self.palette['NUM'])
 
-        self.add_output_socket('', self.palette['HOLOGRAM'])
+        self.add_output_socket('', self.palette['vector1d'])
         self.load_data = kwargs
 
         self.slm_width = None
@@ -28,8 +28,8 @@ class Node(INode):
         start_time = time.time()
         arguments = self.get_func_inputs()
 
-        num = arguments['Номер']
-        amp = arguments['Амплитуда']
+        first = arguments['1-й Номер']
+        weights = np.asarray(arguments['Вектор Весов'])
 
         width = self.event_bus.get_field('slm width')
         height = self.event_bus.get_field('slm height')
@@ -50,16 +50,24 @@ class Node(INode):
 
             self.phi = np.flip(phi, 1)
 
-        holo = zernike_by_number(num, self.rho, self.phi)
+        modes = len(weights)
+        print(modes)
+        print(weights)
+        holos = []
+        for i in range(modes):
+            holos.append(Mask(zernike_by_number(first + i, self.rho, self.phi)) * weights[i])
 
+        #holo = np.average(np.asarray(holos), weights=weights, axis=0) * np.sum(weights)
 
-        self.output_sockets[''].set_value(Mask(holo) * amp)
+        self.output_sockets[''].set_value(holos)
+
+        print(time.time() - start_time)
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Быстрый', 'Zernike'
+        return Node, 'Быстрая сумма', 'Zernike'
 
     def prepare_save_spec(self):
         data = {}

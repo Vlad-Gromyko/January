@@ -1,8 +1,8 @@
-
 from application.core.events import Event
 from application.core.services.nodes.node import INode
 import customtkinter as ctk
 import time
+import numpy as np
 
 
 class Node(INode):
@@ -17,17 +17,12 @@ class Node(INode):
 
         self.load_data = kwargs
 
-        self.strong_control = True
     def execute(self):
         arguments = self.get_func_inputs()
 
         vector = arguments['Вектор'].copy()
 
-        result = vector[0]
-
-        for i in range(1, len(vector)):
-            result = result + vector[i]
-
+        result = np.min(vector)
 
         self.output_sockets[''].set_value(result)
 
@@ -36,7 +31,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Sum', 'Container'
+        return Node, 'Min', 'math'
 
     @staticmethod
     def possible_to_create():

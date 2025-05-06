@@ -24,7 +24,7 @@ class Node(INode):
         vector = arguments['Вектор'].copy()
 
         result =np.max(vector)
-        print(np.max(result))
+
 
 
         self.output_sockets[''].set_value(result)

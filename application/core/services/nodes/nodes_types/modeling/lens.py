@@ -51,7 +51,8 @@ class Node(INode):
         focus = self.event_bus.get_field('optics focus')
         slm_grid_dim = self.event_bus.get_field('slm width')
 
-        if wave != self.wave or gauss_waist != self.gauss_waist or focus != self.focus or slm_grid_dim != self.slm_grid_size:
+        if wave != self.wave or gauss_waist != self.gauss_waist or focus != self.focus or slm_grid_dim != self.slm_grid_dim:
+            print('lens')
             self.wave = wave
             self.gauss_waist = gauss_waist
             self.focus = focus

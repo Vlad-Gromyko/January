@@ -24,6 +24,7 @@ class Node(INode):
         self.add_output_socket('U +- dU', self.palette['vector1d'])
 
         self.add_output_socket('Индекс', self.palette['NUM'])
+        self.add_output_socket('Скорость', self.palette['NUM'])
         self.add_output_socket('После Итерации', self.palette['SIGNAL'])
 
         self.load_data = kwargs
@@ -31,7 +32,7 @@ class Node(INode):
 
     def execute(self):
         arguments = self.get_func_inputs()
-        velocity = arguments['Скорость']
+
         sigma = arguments['Шаг']
         num = len(arguments['U'])
 
@@ -40,7 +41,7 @@ class Node(INode):
 
             u = np.asarray(arguments['U'].copy())
             du = np.asarray([sigma if np.random.rand() < 0.5 else -1 * sigma for i in range(num)])
-            self.output_sockets['dU'].set_value(du)
+            self.output_sockets['dU'].set_value(list(du))
 
             u_plus = list(u + du)
             u_minus = list(u - du)
@@ -63,9 +64,14 @@ class Node(INode):
 
             self.output_sockets['Функция'].set_value(None)
 
+            arguments = self.get_func_inputs()
+            velocity = arguments['Скорость']
+
             result = list(u + velocity * du * (m_plus - m_minus))
 
             self.output_sockets['U'].set_value(result)
+            self.output_sockets['Скорость'].set_value(velocity)
+
             self.output_sockets['После Итерации'].set_value(True)
             self.output_sockets['После Итерации'].set_value(None)
 
@@ -75,7 +81,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Градиентный спуск', 'gradient'
+        return Node, 'Градиентный спуск M+M-', 'gradient'
 
     def prepare_save_spec(self):
         data = {}

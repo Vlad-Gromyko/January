@@ -38,11 +38,15 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
         self.add_button = ctk.CTkButton(self.frame_buttons, text='+ Холст', width=25, height=25,
                                         command=self.plus_add_canvas)
-        self.add_button.grid(row=0, column=3, padx=5)
+        self.add_button.grid(row=0, column=4, padx=5)
 
         self.add_array_button = ctk.CTkButton(self.frame_buttons, text='+ Переменная', width=25, height=25,
                                               command=self.plus_add_container)
-        self.add_array_button.grid(row=0, column=4, padx=5)
+        self.add_array_button.grid(row=0, column=5, padx=5)
+
+        self.add_array_button = ctk.CTkButton(self.frame_buttons, text='T', width=25, height=25,
+                                              command=self.add_text)
+        self.add_array_button.grid(row=0, column=3, padx=5)
 
         self.width = 1165
         self.height = 600
@@ -62,6 +66,11 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.events_reactions['Canvas Add Node'] = lambda event: self.add_node(event.get_value())
 
         self.config = None
+
+    def add_text(self):
+        ask = askstring('Текстовый Маркер', 'Введите Текст:')
+        if ask:
+            pass
 
     def show_inspector(self):
         self.active_tab.containers.deiconify()

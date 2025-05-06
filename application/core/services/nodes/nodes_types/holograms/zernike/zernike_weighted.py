@@ -26,6 +26,7 @@ class Node(INode):
 
         num = len(vector)
 
+
         result = []
 
         for i in range(num):
@@ -34,6 +35,7 @@ class Node(INode):
             holo = self.event_bus.get_field('Last Zernike Mask')
 
             result.append(holo)
+
 
         self.output_sockets['Вектор'].set_value(result)
 
