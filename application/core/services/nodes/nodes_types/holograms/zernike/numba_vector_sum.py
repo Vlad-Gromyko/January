@@ -52,7 +52,7 @@ class Node(INode):
 
         modes = len(weights)
         print(modes)
-        print(weights)
+        print(weights )
         holos = []
         for i in range(modes):
             holos.append(Mask(zernike_by_number(first + i, self.rho, self.phi)) * weights[i])
