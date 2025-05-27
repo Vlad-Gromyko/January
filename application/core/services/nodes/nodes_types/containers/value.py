@@ -70,6 +70,7 @@ class Node(INode):
         height = self.event_bus.get_field('slm height')
 
         null_types = {
+            'signal': None,
             'bool': False,
             'num': 0,
             'str': '',

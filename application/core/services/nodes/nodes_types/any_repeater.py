@@ -39,6 +39,8 @@ class Node(INode):
         arguments = self.get_func_inputs()
 
         value = arguments['']
+
+
         self.ax.cla()
 
         if isinstance(value, float) or isinstance(value, int):
