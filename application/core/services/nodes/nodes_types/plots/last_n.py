@@ -10,7 +10,9 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
+        self.add_enter_socket('', self.palette['vector1d'])
+        self.add_enter_socket('Длина', self.palette['NUM'])
+        self.add_output_socket('', self.palette['vector1d'])
 
 
         self.load_data = kwargs
@@ -18,7 +20,13 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
-        self.event_bus.raise_event(Event('Set SLM Original', arguments['Голограмма']))
+        vector = arguments[''].copy()
+        d = int(arguments['Длина'])
+
+        if len(vector) > d:
+            vector = vector[-d:]
+
+        self.output_sockets[''].set_value(vector)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)

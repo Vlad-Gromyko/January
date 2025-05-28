@@ -1,5 +1,3 @@
-import customtkinter as ctk
-
 from application.core.events import Event
 from application.core.services.nodes.node import INode
 
@@ -18,14 +16,14 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
-        self.event_bus.raise_event(Event('Set SLM Original', arguments['Голограмма']))
+        self.event_bus.raise_event(Event('Set SLM Calibrate', arguments['Голограмма']))
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'SLM', 'slm'
+        return Node, 'Калибровка', 'slm'
 
     def prepare_save_spec(self):
         data = {}
