@@ -14,9 +14,9 @@ class Node(INode):
         self.add_enter_socket('Длина', self.palette['NUM'])
         self.add_output_socket('', self.palette['vector1d'])
 
-
         self.load_data = kwargs
-        self.strong_control = True
+        self.strong_control = False
+
     def execute(self):
         arguments = self.get_func_inputs()
 
@@ -33,7 +33,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'N-Slice', 'slm'
+        return Node, 'N-Slice', 'plots'
 
     def prepare_save_spec(self):
         data = {}

@@ -17,8 +17,8 @@ class Node(INode):
         self.add_output_socket('Голограмма', self.palette['HOLOGRAM'])
 
         self.load_data = kwargs
-        self.widget_width = 330
-        self.widget_height = 160
+        self.widget_width = 420
+        self.widget_height = 200
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
         self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
                                                               anchor=ctk.NW, width=self.widget_width,
