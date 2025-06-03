@@ -70,6 +70,14 @@ class Node(INode):
         elif isinstance(value, np.ndarray):
 
             self.ax.imshow(value, cmap='hot')
+
+            height, width = np.shape(value)
+            center_x = width // 2
+            center_y = height // 2
+
+            # Рисуем вертикальную и горизонтальную линии (перекрестие)
+            self.ax.axhline(y=center_y, color='blue', linestyle='--', linewidth=1)
+            self.ax.axvline(x=center_x, color='blue', linestyle='--', linewidth=1)
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
 

@@ -16,6 +16,7 @@ class Node(INode):
 
         self.add_output_socket('X', self.palette['NUM'])
         self.add_output_socket('Y', self.palette['NUM'])
+        self.add_output_socket('R', self.palette['NUM'])
         self.load_data = kwargs
 
     def execute(self):
@@ -35,13 +36,14 @@ class Node(INode):
 
         self.output_sockets['X'].set_value(x_coord)
         self.output_sockets['Y'].set_value(y_coord)
+        self.output_sockets['R'].set_value(x_coord**2 + y_coord**2)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Координаты Центра', 'traps'
+        return Node, 'Радиус-вектор', 'traps'
 
     @staticmethod
     def possible_to_create():
