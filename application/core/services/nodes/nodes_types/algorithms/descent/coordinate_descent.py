@@ -46,17 +46,24 @@ class Node(INode):
         for i in range(0, int(arguments['Число Итераций'])):
             self.output_sockets['Индекс'].set_value(i)
             arguments = self.get_func_inputs()
-            step = np.asarray(arguments['Шаг'])
+            step = arguments['Шаг']
 
             for j in range(num):
                 self.output_sockets['Индекс Шага'].set_value(j)
                 arguments = self.get_func_inputs()
                 solution = np.asarray(arguments['Решение'])
+                step = arguments['Шаг']
 
-                u_plus = solution
-                u_plus[j] = u_plus[j] + step
-                u_minus = solution
-                u_minus[j] = u_minus[j] + step
+                print(step)
+
+                u_plus = np.copy(solution)
+                u_plus[j] = solution[j] + step
+                u_minus = np.copy(solution)
+                u_minus[j] = solution[j] - step
+
+                print(solution)
+                print(u_plus)
+                print(u_minus)
 
                 self.output_sockets['Решение +- Шаг'].set_value(list(u_plus))
                 self.output_sockets['Метрика'].set_value(True)
@@ -71,9 +78,9 @@ class Node(INode):
                 m_minus = np.asarray(arguments['Метрика'])
 
                 if m_plus <= m_minus:
-                    self.output_sockets['Решение'].set_value(m_plus)
+                    self.output_sockets['Решение'].set_value(list(u_plus))
                 else:
-                    self.output_sockets['Решение'].set_value(m_minus)
+                    self.output_sockets['Решение'].set_value(list(u_minus))
 
                 self.output_sockets['После Шага'].set_value(True)
 
