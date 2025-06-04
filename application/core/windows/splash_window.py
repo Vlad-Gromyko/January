@@ -12,10 +12,10 @@ class SplashWindow(Service, ctk.CTkToplevel):
         self.title('Splash')
         path = r"resources/splashes/"
         image = Image.open(path + random.choice(os.listdir(path)))
-        self.label = ctk.CTkLabel(self, image=ctk.CTkImage(light_image=image, size=(image.width, image.height)), text='')
+        self.label = ctk.CTkLabel(self, image=ctk.CTkImage(light_image=image, size=(image.width//2, image.height//2)), text='')
         self.label.grid()
 
-        self.geometry(f'{image.width}x{image.height}')
+        self.geometry(f'{image.width//2}x{image.height//2}')
 
         self.events_reactions['Load'] = lambda event: self.show_splash()
         self.events_reactions['Project Loaded'] = lambda event: self.withdraw()

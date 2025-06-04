@@ -3,7 +3,7 @@ import numpy as np
 from application.core.events import Event
 from application.core.services.nodes.node import INode
 import cv2
-
+import time
 class Node(INode):
     def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
         super().__init__(special_id, config, editor, canvas, x, y, control, text, theme)
@@ -29,6 +29,7 @@ class Node(INode):
 
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             shots.append(frame)
+
         cap.release()
         shot = np.median(shots, axis=0)
 
