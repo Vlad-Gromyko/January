@@ -76,7 +76,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Frame', 'camera'
+        return Node, 'Frame', 'Metric'
 
     def prepare_save_spec(self):
         data = {}
