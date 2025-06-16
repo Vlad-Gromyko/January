@@ -24,41 +24,21 @@ class Node(INode):
         self.add_output_socket('Эллиптичность', self.palette['NUM'])
         self.add_output_socket('Сумма', self.palette['NUM'])
 
+
+
         self.load_data = kwargs
         self.strong_control = False
-
-        self.widget_width = 200
-        self.widget_height = 40
-        frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
-        self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
-                                                              anchor=ctk.NW, width=self.widget_width,
-                                                              height=self.widget_height)
-        self.check_var = ctk.StringVar(value="on")
-        self.checkbox = ctk.CTkCheckBox(frame_widgets, text="Адаптивный центр",
-                                        variable=self.check_var, onvalue="on", offvalue="off")
-        self.checkbox.grid(row=0, column=0, padx=5, pady=5)
 
     def execute(self):
         arguments = self.get_func_inputs()
 
         image = arguments['Изображение']
 
-        w, h = np.shape(image)
-
-        x = np.linspace(-h / 2, h / 2, h)
-        y = np.linspace(-w / 2, w / 2, w)
-        x, y = np.meshgrid(x, y)
-
-        if self.checkbox.get() == 'on':
-            x_c = np.sum(x * image) / np.sum(image)
-            y_c = np.sum(y * image) / np.sum(image)
-        else:
-            x_c, y_c = 0, 0
-
         edge = arguments['Порог']
 
         result_up = np.where(image >= edge, image, 0)
         result_down = np.where(image < edge, image, 0)
+
 
         result_down = np.sum(result_down)
 
@@ -73,14 +53,20 @@ class Node(INode):
 
         self.output_sockets['Симметрия'].set_value(result_sym)
 
-        signal_intensity = np.sum(image * ((x - x_c) ** 2 + (y - y_c) ** 2))
+        w, h = np.shape(image)
+
+        x = np.linspace(-h / 2, h / 2, h)
+        y = np.linspace(-w / 2, w / 2, w)
+        x, y = np.meshgrid(x, y)
+
+        signal_intensity = np.sum(image * (x ** 2 + y ** 2))
         summ_intensity = np.sum(image)
 
         result_mds = signal_intensity / summ_intensity
         self.output_sockets['MDS'].set_value(result_mds)
 
-        sigma_x = np.sum((x - x_c) * (x - x_c) * image)
-        sigma_y = np.sum((y - y_c) * (y - y_c) * image)
+        sigma_x = np.sum(x * x * image)
+        sigma_y = np.sum(y * y * image)
 
         result_ellipse = np.abs(sigma_x - sigma_y)
 
