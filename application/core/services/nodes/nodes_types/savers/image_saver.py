@@ -59,22 +59,22 @@ class Node(INode):
 
     def execute(self):
         arguments = self.get_func_inputs()
+        if self.folder_name is not None:
+            count = self.count_files_in_directory(self.folder_name)
 
-        count = self.count_files_in_directory(self.folder_name)
+            cmap = self.combo.get()
 
-        cmap = self.combo.get()
+            data = arguments['Изображение']
 
-        data = arguments['Изображение']
+            normalized_data = (data - np.min(data)) / (np.max(data) - np.min(data))
 
-        normalized_data = (data - np.min(data)) / (np.max(data) - np.min(data))
+            colormap = cm.get_cmap(cmap)  # или cm.viridis
+            mapped_data = colormap(normalized_data)
 
-        colormap = cm.get_cmap(cmap)  # или cm.viridis
-        mapped_data = colormap(normalized_data)
+            image_data = (mapped_data[:, :, :3] * 255).astype(np.uint8)
 
-        image_data = (mapped_data[:, :, :3] * 255).astype(np.uint8)
-
-        image = Image.fromarray(image_data, 'RGB')
-        image.save(f'{self.folder_name}/{count}.png')
+            image = Image.fromarray(image_data, 'RGB')
+            image.save(f'{self.folder_name}/{count}.png')
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)

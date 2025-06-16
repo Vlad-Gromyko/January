@@ -70,6 +70,7 @@ class Node(INode):
         rotated_1 = np.flip(image, axis=1)
 
         result_sym = np.sum(np.abs(image - rotated_0) + np.abs(image - rotated_1))
+        result_sym = result_sym / np.sum(image)
 
         self.output_sockets['Симметрия'].set_value(result_sym)
 
@@ -82,7 +83,7 @@ class Node(INode):
         sigma_x = np.sum((x - x_c) * (x - x_c) * image)
         sigma_y = np.sum((y - y_c) * (y - y_c) * image)
 
-        result_ellipse = np.abs(sigma_x - sigma_y)
+        result_ellipse = np.abs(sigma_x - sigma_y) / np.sum(image)
 
         self.output_sockets['Эллиптичность'].set_value(result_ellipse)
 
