@@ -19,11 +19,11 @@ class Node(INode):
         self.add_enter_socket('Стартер', self.palette['HOLOGRAM'])
         self.add_enter_socket('Число Итераций', self.palette['NUM'])
 
-
         self.add_output_socket('Голограмма', self.palette['HOLOGRAM'])
         self.load_data = kwargs
 
         self.strong_control = True
+
     def execute(self):
         arguments = self.get_func_inputs()
 
@@ -39,8 +39,7 @@ class Node(INode):
             z.append(item[2])
             w.append(item[3])
 
-
-        starter = arguments['Стартер']
+        starter = arguments['Стартер'].get_array()
         iters = arguments['Число Итераций']
 
         pixel = self.event_bus.get_field('slm pixel')
@@ -55,25 +54,18 @@ class Node(INode):
         y_mesh = np.linspace(-height * pixel / 2, height * pixel / 2, height)
 
         x_mesh, y_mesh = np.meshgrid(x_mesh, y_mesh)
-        print(np.asarray(x))
-        print(np.asarray(y))
-        print(wave)
-        print(focus)
-        print(np.asarray(w))
-        
 
         phase = mega_HOTA(np.asarray(x), np.asarray(y), x_mesh, y_mesh, wave, focus, np.asarray(w),
-                          starter.get_array(), int(iters))
+                          starter, int(iters))
 
         self.output_sockets['Голограмма'].set_value(Mask(phase + np.pi))
-
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Hota', 'traps'
+        return Node, 'SuperHota', 'traps'
 
     @staticmethod
     def possible_to_create():
@@ -85,7 +77,8 @@ class Node(INode):
         save = {**data, **saves}
         return __file__, self.x, self.y, save, self.special_id, self.with_signals
 
-@numba.njit(fastmath=True)
+
+@numba.njit(fastmath=True, parallel=True)
 def mega_HOTA(x_list, y_list, x_mesh, y_mesh, wave, focus, user_weights, initial_phase, iterations):
     num_traps = len(user_weights)
     v_list = np.zeros_like(user_weights, dtype=np.complex128)
@@ -96,26 +89,26 @@ def mega_HOTA(x_list, y_list, x_mesh, y_mesh, wave, focus, user_weights, initial
 
     lattice = 2 * np.pi / wave / focus
 
-    for i in range(num_traps):
-        trap = (lattice * (x_list[i] * x_mesh + y_list[i] * y_mesh)) % (2 * np.pi)
-        v_list[i] = 1 / area * np.sum(np.exp(1j * (initial_phase - trap)))
+    traps = np.empty((num_traps, x_mesh.shape[1], x_mesh.shape[0]))
+    for i in numba.prange(num_traps):
+        traps[i] = (lattice * (x_list[i] * x_mesh + y_list[i] * y_mesh)) % (2 * np.pi)
+
+    for i in numba.prange(num_traps):
+        v_list[i] = np.sum(np.exp(1j * (initial_phase - traps[i]))) / area
 
     anti_user_weights = 1 / user_weights
 
     for k in range(iterations):
-        w_list_before = w_list
+        w_list_before = w_list.copy()
         avg = np.average(np.abs(v_list), weights=anti_user_weights)
-
         w_list = avg / np.abs(v_list) * user_weights * w_list_before
 
-        summ = np.zeros_like(initial_phase, dtype=np.complex128)
-        for ip in range(num_traps):
-            trap = (lattice * (x_list[ip] * x_mesh + y_list[ip] * y_mesh)) % (2 * np.pi)
-            summ = summ + np.exp(1j * trap) * user_weights[ip] * v_list[ip] * w_list[ip] / np.abs(
-                v_list[ip])
+        weighted_phasors = (user_weights[:, None, None] * v_list[:, None, None] * w_list[:, None, None] /
+                            np.abs(v_list)[:, None, None] * np.exp(1j * traps))
+        summ = np.sum(weighted_phasors, axis=0)
         phase = np.angle(summ)
 
-        for iv in range(num_traps):
-            trap = (lattice * (x_list[iv] * x_mesh + y_list[iv] * y_mesh)) % (2 * np.pi)
-            v_list[iv] = 1 / area * np.sum(np.exp(1j * (phase - trap)))
+        for i in numba.prange(num_traps):
+            v_list[i] = np.sum(np.exp(1j * (phase - traps[i]))) / area
+
     return phase

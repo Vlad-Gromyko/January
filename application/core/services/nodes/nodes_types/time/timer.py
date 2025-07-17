@@ -1,8 +1,5 @@
-import numpy as np
-
-from application.core.events import Event
 from application.core.services.nodes.node import INode
-import customtkinter as ctk
+
 import time
 
 
@@ -12,30 +9,27 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_output_socket('[]', self.palette['vector1d'])
+        self.add_enter_socket('', self.palette['SIGNAL'])
         self.load_data = kwargs
+        self.strong_control = False
 
-        self.strong_control = True
+        self.timer = 0
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        traps = self.event_bus.get_field('Traps')
+        timer = time.time()
 
-        print(traps)
+        print(timer - self.timer)
 
-        self.output_sockets['[]'].set_value(traps)
+        self.timer = timer
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Все ловушки', 'traps'
-
-    @staticmethod
-    def possible_to_create():
-        return True
+        return Node, 'Таймер', 'program'
 
     def prepare_save_spec(self):
         data = {}

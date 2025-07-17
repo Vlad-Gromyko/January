@@ -26,6 +26,6 @@ def create_gif_from_png(folder_path, output_gif, duration=200, loop=0):
     print(f"GIF успешно создан: {output_gif}")
 
 if __name__ == '__main__':
-    folder_path = r'C:\Users\vgrom\Desktop\1'
-    output_gif = r'C:\Users\vgrom\Desktop\1.gif'
+    folder_path = r'C:\Users\vgrom\OneDrive\Рабочий стол\для гиф'
+    output_gif = r'C:\Users\vgrom\OneDrive\Рабочий стол\gif\3.gif'
     create_gif_from_png(folder_path, output_gif, duration=200, loop=0)

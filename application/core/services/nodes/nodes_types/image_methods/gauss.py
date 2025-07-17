@@ -20,7 +20,7 @@ class Node(INode):
         self.add_enter_socket('Изображение', self.palette['CAMERA_SHOT'])
         self.add_enter_socket('Сигма', self.palette['NUM'])
 
-        self.add_output_socket('', self.palette['NUM'])
+        self.add_output_socket('', self.palette['CAMERA_SHOT'])
 
         self.load_data = kwargs
         self.strong_control = False
@@ -29,16 +29,16 @@ class Node(INode):
         arguments = self.get_func_inputs()
 
         image = arguments['Изображение']
-        edge = arguments['Порог']
+        sigma = arguments['Сигма']
 
-        result_up = np.where(image >= edge, image, 0)
-        result_down = np.where(image < edge, image, 0)
+        w, h = np.shape(image)
 
-        result_up = np.sum(result_up)
-        result_down = np.sum(result_down)
+        x = np.linspace(-h / 2, h / 2, h)
+        y = np.linspace(-w / 2, w / 2, w)
+        x, y = np.meshgrid(x, y)
 
-        result = result_down / result_up
-
+        gauss = np.exp(-(x**2 / sigma**2 + y**2 / sigma**2))
+        result = gauss * image
         self.output_sockets[''].set_value(result)
 
         if 'go' in self.output_sockets.keys():
@@ -46,7 +46,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Расщепление', 'Metric'
+        return Node, 'Гаусс', 'Metric'
 
     def prepare_save_spec(self):
         data = {}
