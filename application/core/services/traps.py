@@ -96,9 +96,15 @@ class Traps(Service, ctk.CTkToplevel):
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.events_reactions['Show/Hide Service Traps'] = lambda event: self.deiconify()
+        self.events_reactions['Set Weight Traps'] = lambda event: self.set_weights(event.get_value())
 
         self.visible = False
         self.attributes('-topmost', True)
+
+    def set_weights(self, weights):
+        self.sheet.set_column_data(3, weights)
+        self.update_traps()
+
 
     def save_project(self, path):
         if not os.path.exists(path):
@@ -243,15 +249,15 @@ class ArrayGeometry(TrapsGeometry):
         self.nz.grid(row=1, column=3)
 
         self.dx = ctk.CTkEntry(f, width=50)
-        self.dx.insert(0, '100')
+        self.dx.insert(0, '200')
         self.dx.grid(row=2, column=1)
 
         self.dy = ctk.CTkEntry(f, width=50)
-        self.dy.insert(0, '100')
+        self.dy.insert(0, '200')
         self.dy.grid(row=2, column=2)
 
         self.dz = ctk.CTkEntry(f, width=50)
-        self.dz.insert(0, '100')
+        self.dz.insert(0, '200')
         self.dz.grid(row=2, column=3)
 
     def do_geometry(self):

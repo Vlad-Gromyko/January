@@ -22,8 +22,6 @@ class Node(INode):
 
         traps = self.event_bus.get_field('Traps')
 
-        print(traps)
-
         self.output_sockets['[]'].set_value(traps)
 
         if 'go' in self.output_sockets.keys():

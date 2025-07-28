@@ -1,0 +1,60 @@
+from application.core.events import Event
+from application.core.services.nodes.node import INode
+import customtkinter as ctk
+import time
+
+
+class Node(INode):
+    def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
+        super().__init__(special_id, config, editor, canvas, x, y, control, text, theme)
+
+        self.special_id = special_id
+
+        self.add_enter_socket('A', self.palette['NUM'])
+        self.add_enter_socket('B', self.palette['NUM'])
+
+        self.add_output_socket('=', self.palette['SIGNAL'])
+        self.add_output_socket('>', self.palette['SIGNAL'])
+        self.add_output_socket('>=', self.palette['SIGNAL'])
+        self.add_output_socket('<', self.palette['SIGNAL'])
+        self.add_output_socket('<=', self.palette['SIGNAL'])
+
+        self.load_data = kwargs
+
+
+    def execute(self):
+        arguments = self.get_func_inputs()
+
+
+        if arguments['A'] == arguments['B']:
+            self.output_sockets['='].set_value(True)
+
+        if arguments['A'] > arguments['B']:
+            self.output_sockets['>'].set_value(True)
+
+        if arguments['A'] >= arguments['B']:
+            self.output_sockets['>='].set_value(True)
+
+        if arguments['A'] < arguments['B']:
+            self.output_sockets['<'].set_value(True)
+
+        if arguments['A'] <= arguments['B']:
+            self.output_sockets['<='].set_value(True)
+
+
+        if 'go' in self.output_sockets.keys():
+            self.output_sockets['go'].set_value(True)
+
+    @staticmethod
+    def create_info():
+        return Node, 'A ? B', 'program'
+
+    @staticmethod
+    def possible_to_create():
+        return True
+
+    def prepare_save_spec(self):
+        data = {}
+        saves = self.saves_dict()
+        save = {**data, **saves}
+        return __file__, self.x, self.y, save, self.special_id, self.with_signals
