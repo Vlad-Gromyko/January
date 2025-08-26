@@ -74,7 +74,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Uniformity Plot', 'program'
+        return Node, 'Uniformity Plot', 'Plots'
 
     def prepare_save_spec(self):
         data = {}

@@ -11,25 +11,13 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Число Итераций', self.palette['NUM'])
-        self.add_enter_socket('Целевое Распределение', self.palette['vector1d'])
-        self.add_enter_socket('Скорость', self.palette['NUM'])
+        self.add_enter_socket('X_C', self.palette['NUM'])
+        self.add_enter_socket('Y_C', self.palette['NUM'])
 
-        self.add_enter_socket('Момент', self.palette['NUM'])
-        self.add_enter_socket('Решение', self.palette['vector1d'])
-
-        self.add_enter_socket('Интенсивности', self.palette['vector1d'])
-
-        self.add_output_socket('Индекс', self.palette['NUM'])
-        self.add_output_socket('Метрика', self.palette['SIGNAL'])
-
-        self.add_output_socket('Решение', self.palette['vector1d'])
-
-
-        self.add_output_socket('После Итерации', self.palette['SIGNAL'])
-
-        self.add_output_socket('BEST', self.palette['SIGNAL'])
-        self.add_output_socket('NOT BEST', self.palette['SIGNAL'])
+        self.add_enter_socket('X_N', self.palette['NUM'])
+        self.add_enter_socket('X_N', self.palette['NUM'])
+        self.add_enter_socket('X_C', self.palette['NUM'])
+        self.add_enter_socket('X_C', self.palette['NUM'])
 
 
 

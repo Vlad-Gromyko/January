@@ -59,6 +59,8 @@ class Node(INode):
 
         timer = time.time()
 
+        # print((np.asarray(x), np.asarray(y), x_mesh, y_mesh, np.asarray(w),starter.get_array(), int(iters)))
+
         phase = mega_HOTA_optimized(np.asarray(x), np.asarray(y), x_mesh, y_mesh, np.asarray(w),
                                     starter.get_array(), int(iters))
 

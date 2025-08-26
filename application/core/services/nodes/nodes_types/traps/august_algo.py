@@ -13,9 +13,10 @@ class Node(INode):
 
         self.add_enter_socket('Число Итераций', self.palette['NUM'])
         self.add_enter_socket('Целевое Распределение', self.palette['vector1d'])
-        self.add_enter_socket('Скорость', self.palette['NUM'])
+        self.add_enter_socket('Lambda', self.palette['NUM'])
+        self.add_enter_socket('Beta', self.palette['NUM'])
+        self.add_enter_socket('P', self.palette['NUM'])
 
-        self.add_enter_socket('Момент', self.palette['NUM'])
         self.add_enter_socket('Решение', self.palette['vector1d'])
 
         self.add_enter_socket('Интенсивности', self.palette['vector1d'])
@@ -25,13 +26,7 @@ class Node(INode):
 
         self.add_output_socket('Решение', self.palette['vector1d'])
 
-
         self.add_output_socket('После Итерации', self.palette['SIGNAL'])
-
-        self.add_output_socket('BEST', self.palette['SIGNAL'])
-        self.add_output_socket('NOT BEST', self.palette['SIGNAL'])
-
-
 
         self.previous = None
 
@@ -49,7 +44,6 @@ class Node(INode):
                                         variable=self.check_var, onvalue="on", offvalue="off")
         self.checkbox.grid(row=0, column=0, padx=5, pady=5)
 
-
         self.u_history = []
         self.weights_history = []
         self.intensities_history = []
@@ -63,16 +57,13 @@ class Node(INode):
 
         self.design = []
 
-        self.momentum = 1
-        self.velocity = 1
-
 
     def iteration(self, weights):
         now = datetime.datetime.now().strftime("%H:%M:%S")
         print(f"The time is {now}")
 
         self.output_sockets['Решение'].set_value(list(weights))
-
+        print(weights)
         self.output_sockets['Метрика'].set_value(True)
 
         arguments = self.get_func_inputs()
@@ -87,13 +78,6 @@ class Node(INode):
 
             print('best')
 
-            self.output_sockets['BEST'].set_value(True)
-
-        else:
-            self.velocity = self.velocity / self.momentum
-            print('worst', self.velocity)
-
-            self.output_sockets['NOT BEST'].set_value(True)
 
 
         self.weights_history.append(weights)
@@ -111,27 +95,25 @@ class Node(INode):
         self.best_uniformity = []
         self.best_intensities = []
 
+
         self.solution = []
 
         self.design = []
 
         arguments = self.get_func_inputs()
-        self.velocity = arguments['Скорость']
-
-        self.momentum = arguments['Момент']
 
         self.design = np.asarray(arguments['Целевое Распределение'])
 
         weights = arguments['Решение']
         self.iteration(weights)
 
+        decay = arguments['Lambda']
+        beta = arguments['Beta']
+        p = arguments['P']
 
         for k in range(0, int(arguments['Число Итераций'])):
             self.output_sockets['Индекс'].set_value(k)
             values = self.intensities_history[-1]
-
-
-
             if self.checkbox.get() == 'on':
                 weights = self.best_weights[-1]
             else:
@@ -139,7 +121,11 @@ class Node(INode):
 
             gradient = (self.design / np.max(self.design) - values)
             gradient = gradient / np.linalg.norm(gradient)
-            weights = weights + self.velocity * gradient
+
+            decay_operator = decay / len(weights)
+            random_operator = np.random.uniform(-1, 1, len(weights))
+            random_operator = np.linalg.norm(random_operator) * beta
+            weights = weights + decay_operator * (gradient + random_operator) * (1 - self.u_history[-1] ** p) ** (1/p)
 
             self.iteration(weights)
 
@@ -152,7 +138,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Новый Декабрь', 'gradient'
+        return Node, 'Новый Август', 'gradient'
 
     def prepare_save_spec(self):
         data = {}

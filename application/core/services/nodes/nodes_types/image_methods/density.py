@@ -1,4 +1,4 @@
-from cgitb import reset
+
 
 import customtkinter as ctk
 import os

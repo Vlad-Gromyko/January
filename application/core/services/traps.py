@@ -18,6 +18,7 @@ from application.core.events import Service, Event
 from application.core.utility.mask import Mask
 from application.widgets.maskwidget import MaskLabel
 
+from tkinter.filedialog import askopenfilename
 
 class Traps(Service, ctk.CTkToplevel):
     def __init__(self, master):
@@ -86,6 +87,11 @@ class Traps(Service, ctk.CTkToplevel):
         self.tabs.grid(row=4, column=0, columnspan=2)
         self.arrays = ArrayGeometry(self, func=self.add_trap)
         self.arrays.grid()
+
+        self.image = ImageGeometry(self, func=self.add_trap)
+        self.image.grid()
+
+
 
         ctk.CTkButton(f1, text='Очистить', fg_color='#c94f4f', command=self.clear).grid(row=1, column=2, columnspan=4)
 
@@ -285,3 +291,76 @@ class ArrayGeometry(TrapsGeometry):
                     traps.append((x, y, z, w))
 
         return traps
+
+class ImageGeometry(TrapsGeometry):
+    def __init__(self, master: Traps, func):
+        super().__init__(master, 'Изображение', func)
+
+        f = ctk.CTkFrame(self, height=300)
+        f.grid(row=1)
+
+        ctk.CTkLabel(f, text='X', width=20).grid(row=0, column=1)
+        ctk.CTkLabel(f, text='Y', width=20).grid(row=0, column=2)
+        ctk.CTkLabel(f, text='Z', width=20).grid(row=0, column=3)
+        ctk.CTkLabel(f, text='N', width=20).grid(row=1, column=0)
+        ctk.CTkLabel(f, text='\u2195', width=20).grid(row=2, column=0)
+
+        self.nx = ctk.CTkEntry(f, width=50)
+        self.nx.insert(0, '5')
+        self.nx.grid(row=1, column=1)
+
+        self.ny = ctk.CTkEntry(f, width=50)
+        self.ny.insert(0, '5')
+        self.ny.grid(row=1, column=2)
+
+        self.nz = ctk.CTkEntry(f, width=50)
+        self.nz.insert(0, '1')
+        self.nz.grid(row=1, column=3)
+
+        self.dx = ctk.CTkEntry(f, width=50)
+        self.dx.insert(0, '200')
+        self.dx.grid(row=2, column=1)
+
+        self.dy = ctk.CTkEntry(f, width=50)
+        self.dy.insert(0, '200')
+        self.dy.grid(row=2, column=2)
+
+        self.dz = ctk.CTkEntry(f, width=50)
+        self.dz.insert(0, '200')
+        self.dz.grid(row=2, column=3)
+
+
+    def do_geometry(self):
+        x_n = int(self.nx.get())
+        y_n = int(self.ny.get())
+        z_n = int(self.nz.get())
+
+        x_d = float(self.dx.get())
+        y_d = float(self.dy.get())
+        z_d = float(self.dz.get())
+
+        x_c = 0
+        y_c = 0
+        z_c = 0
+
+        x_line = [x_c - x_d * (x_n - 1) / 2 + x_d * i for i in range(x_n)]
+        y_line = [y_c - y_d * (y_n - 1) / 2 + y_d * i for i in range(y_n)]
+        z_line = [z_c - z_d * (z_n - 1) / 2 + z_d * i for i in range(z_n)]
+
+        w = float(self.w.get())
+        traps = []
+
+        ask = askopenfilename()
+        if ask:
+            img = Image.open(ask).convert('L')
+            img = img.resize((x_n, y_n))
+            img = np.asarray(img)
+            img = img / np.max(img)
+
+            for cx, ix in enumerate(x_line):
+                for cy, iy in enumerate(y_line):
+                    w = img[cy][cx]
+                    if w>0:
+                        traps.append((ix, iy, 0, img[cy][cx] + 1))
+
+            return traps

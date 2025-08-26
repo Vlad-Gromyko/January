@@ -1,13 +1,7 @@
-
-import customtkinter as ctk
-import os
 from application.core.events import Event
 from application.core.services.nodes.node import INode
-from tkinter.filedialog import askdirectory
-from matplotlib import cm
-from PIL import Image
-
-import numpy as np
+import customtkinter as ctk
+import time
 
 
 class Node(INode):
@@ -16,32 +10,29 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Изображение', self.palette['CAMERA_SHOT'])
+        self.add_enter_socket('Вектор', self.palette['vector1d'])
 
-
-        self.add_output_socket('', self.palette['NUM'])
-
+        self.add_output_socket('Длина', self.palette['NUM'])
         self.load_data = kwargs
-        self.strong_control = False
+
+        self.strong_control = True
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        image = arguments['Изображение']
+        vector = arguments['Вектор']
 
-        rotated_0 = np.flip(image, axis=0)
-        rotated_1 = np.flip(image, axis=1)
-
-        result = np.sum(np.abs(image - rotated_0) + np.abs(image - rotated_1))
-
-        self.output_sockets[''].set_value(result)
-
+        self.output_sockets['Длина'].set_value(len(vector))
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Симметрия', 'Metric'
+        return Node, 'Len', 'Container'
+
+    @staticmethod
+    def possible_to_create():
+        return True
 
     def prepare_save_spec(self):
         data = {}
