@@ -17,7 +17,7 @@ class Node(INode):
         self.add_enter_socket('Вектор X', self.palette['vector1d'])
         self.add_enter_socket('Вектор Y', self.palette['vector1d'])
         self.add_enter_socket('Область', self.palette['NUM'])
-        self.add_enter_socket('Целевое Распределение', self.palette['NUM'])
+        self.add_enter_socket('Целевое Распределение', self.palette['vector1d'])
 
         self.add_output_socket('Вектор I', self.palette['vector1d'])
         self.add_output_socket('Uniformity', self.palette['NUM'])

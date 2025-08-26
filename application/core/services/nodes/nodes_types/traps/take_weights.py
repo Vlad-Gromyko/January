@@ -31,7 +31,7 @@ class Node(INode):
 
         print('AAAAAAAAA', weights)
 
-        self.output_sockets['[]'].set_value(traps)
+        self.output_sockets['[]'].set_value(weights)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)

@@ -6,7 +6,7 @@ import numpy as np
 
 import screeninfo
 import cv2
-from PIL import Image
+from PIL import Image, ImageEnhance
 import matplotlib.pyplot as plt
 from fontTools.t1Lib import write
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -353,6 +353,7 @@ class ImageGeometry(TrapsGeometry):
         ask = askopenfilename()
         if ask:
             img = Image.open(ask).convert('L')
+            img = ImageEnhance.Sharpness(img).enhance(2)
             img = img.resize((x_n, y_n))
             img = np.asarray(img)
             img = img / np.max(img)
@@ -364,3 +365,4 @@ class ImageGeometry(TrapsGeometry):
                         traps.append((ix, iy, 0, img[cy][cx] + 1))
 
             return traps
+        return []

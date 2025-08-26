@@ -84,6 +84,7 @@ class Node(INode):
         if (len(self.best_uniformity) == 0) or (u > self.best_uniformity[-1]):
             self.best_uniformity.append(u)
             self.best_weights.append(weights)
+            self.best_intensities.append(values)
 
             print('best')
 
@@ -137,8 +138,9 @@ class Node(INode):
             else:
                 weights = self.weights_history[-1]
 
-            gradient = (self.design / np.max(self.design) - values)
-            gradient = gradient / np.linalg.norm(gradient)
+            gradient = (self.design / np.max(self.design) - self.best_intensities[-1])
+            print(gradient)
+            self.gradient_history.append(gradient)
             weights = weights + self.velocity * gradient
 
             self.iteration(weights)
