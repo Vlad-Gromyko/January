@@ -138,7 +138,7 @@ class Node(INode):
             else:
                 weights = self.weights_history[-1]
 
-            gradient = (self.design / np.max(self.design) - self.best_intensities[-1])
+            gradient = (self.design / np.max(self.design) - values)
             print(gradient)
             self.gradient_history.append(gradient)
             weights = weights + self.velocity * gradient
