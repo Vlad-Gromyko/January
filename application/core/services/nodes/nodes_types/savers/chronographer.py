@@ -15,12 +15,15 @@ class Node(INode):
         self.special_id = special_id
 
         self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
+        self.add_enter_socket('Снимок', self.palette['CAMERA_SHOT'])
+        self.add_enter_socket('Веса', self.palette['vector1d'])
+        self.add_enter_socket('Метрики', self.palette['vector1d'])
 
         self.load_data = kwargs
         self.strong_control = True
 
         self.widget_width = 200
-        self.widget_height = 40
+        self.widget_height = 70
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
         self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
                                                               anchor=ctk.NW, width=self.widget_width,
@@ -30,6 +33,12 @@ class Node(INode):
 
         self.file_folder = ctk.CTkLabel(frame_widgets, text='')
         self.file_folder.grid(row=0, column=1)
+
+        values = ['viridis', 'plasma', 'inferno', 'magma', 'cividis']
+
+        self.combo = ctk.CTkComboBox(frame_widgets, values=values)
+        self.combo.set('inferno')
+        self.combo.grid(row=1)
 
         self.folder_name = None
 
@@ -54,20 +63,52 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
         if self.folder_name is not None:
+
+            cmap = self.combo.get()
+
+            hologram = arguments['Голограмма']
+            shot = arguments['Снимок']
+            weights = np.asarray(arguments['Веса'])
+            metrics = np.asarray(arguments['Метрики'])
+
             count = self.count_files_in_directory(self.folder_name)
+            epoch = self.folder_name + '/' + str(count)
+            os.mkdir(epoch)
 
-            data = arguments['Голограмма']
+            self.save_shot(shot, epoch, cmap)
+            self.save_holo(hologram, epoch)
+            np.savetxt(f'{epoch}/weights.txt', weights, fmt='%s')
+            np.savetxt(f'{epoch}/metrics.txt', metrics, fmt='%s')
 
-            array = np.asarray(data.get_array() / 2 / np.pi * 255, dtype='uint8')
-            image = Image.fromarray(array)
-            image.save(f'{self.folder_name}/{count}.bmp')
+
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
+    def save_shot(shot, path, cmap):
+        data = shot
+
+        normalized_data = (data - np.min(data)) / (np.max(data) - np.min(data))
+
+        colormap = cm.get_cmap(cmap)  # или cm.viridis
+        mapped_data = colormap(normalized_data)
+
+        image_data = (mapped_data[:, :, :3] * 255).astype(np.uint8)
+
+        image = Image.fromarray(image_data, 'RGB')
+        image.save(f'{path}/shot.png')
+
+    @staticmethod
+    def save_holo(holo, path):
+        data = holo
+        array = np.asarray(data.get_array() / 2 / np.pi * 255, dtype='uint8')
+        image = Image.fromarray(array)
+        image.save(f'{path}/holo.bmp')
+
+    @staticmethod
     def create_info():
-        return Node, 'Image', 'savers'
+        return Node, 'Хронографер', 'savers'
 
     def prepare_save_spec(self):
         data = {}

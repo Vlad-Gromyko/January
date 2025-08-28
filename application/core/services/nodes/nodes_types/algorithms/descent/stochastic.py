@@ -67,7 +67,7 @@ class Node(INode):
 
             amp = arguments['Шаг']
 
-            steps = np.asarray([amp if np.random.rand() < 0.5 else -1 * amp for i in range(num)])
+            steps = np.sign(np.random.uniform(-1, 1, num)) * amp
 
             u = np.asarray(arguments['Решение'].copy())
 

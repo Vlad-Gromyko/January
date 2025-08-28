@@ -17,7 +17,7 @@ class Node(INode):
         self.add_enter_socket('Изображение', self.palette['CAMERA_SHOT'])
 
         self.load_data = kwargs
-        self.strong_control = False
+        self.strong_control = True
 
         self.widget_width = 200
         self.widget_height = 40

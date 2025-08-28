@@ -13,7 +13,7 @@ class Node(INode):
         self.add_enter_socket('Голограмма', self.palette['HOLOGRAM'])
 
         self.load_data = kwargs
-        self.strong_control = True
+        self.strong_control = False
 
     def execute(self):
         arguments = self.get_func_inputs()
