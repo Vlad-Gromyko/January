@@ -4,7 +4,7 @@ import customtkinter as ctk
 from application.core.services.nodes.node import INode
 import datetime
 
-def random_zero_numpy(vector, zero_ratio=0.3):
+def random_zero(vector, zero_ratio=0.3):
     """
     Обнуляет случайные элементы вектора с использованием NumPy.
 
@@ -15,7 +15,10 @@ def random_zero_numpy(vector, zero_ratio=0.3):
     Returns:
         Вектор с обнуленными элементами
     """
-    arr = np.asarray(vector)
+    arr = np.array(vector)
+
+    if zero_ratio == 0:
+        return arr
 
     if len(arr) == 0:
         return arr
@@ -38,7 +41,6 @@ def random_zero_numpy(vector, zero_ratio=0.3):
 
     return result
 
-
 class Node(INode):
     def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
         super().__init__(special_id, config, editor, canvas, x, y, control, text, theme)
@@ -49,7 +51,6 @@ class Node(INode):
         self.add_enter_socket('Целевое Распределение', self.palette['vector1d'])
         self.add_enter_socket('Скорость', self.palette['NUM'])
 
-        self.add_enter_socket('Момент', self.palette['NUM'])
         self.add_enter_socket('Решение', self.palette['vector1d'])
 
         self.add_enter_socket('Интенсивности', self.palette['vector1d'])
@@ -62,8 +63,6 @@ class Node(INode):
 
         self.add_output_socket('После Итерации', self.palette['SIGNAL'])
 
-        self.add_output_socket('BEST', self.palette['SIGNAL'])
-        self.add_output_socket('NOT BEST', self.palette['SIGNAL'])
 
 
 
@@ -72,33 +71,22 @@ class Node(INode):
         self.load_data = kwargs
         self.strong_control = True
 
-        self.widget_width = 200
-        self.widget_height = 40
-        frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
-        self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
-                                                              anchor=ctk.NW, width=self.widget_width,
-                                                              height=self.widget_height)
-        self.check_var = ctk.StringVar(value="on")
-        self.checkbox = ctk.CTkCheckBox(frame_widgets, text="Best",
-                                        variable=self.check_var, onvalue="on", offvalue="off")
-        self.checkbox.grid(row=0, column=0, padx=5, pady=5)
 
 
-        self.u_history = []
-        self.weights_history = []
-        self.intensities_history = []
-        self.gradient_history = []
 
-        self.best_weights = []
-        self.best_uniformity = []
-        self.best_intensities = []
 
-        self.solution = []
 
         self.design = []
 
+        self.intensities_history = []
+        self.u_history = []
+
         self.momentum = 1
         self.velocity = 1
+        self.power = 1
+        self.decay = 1
+        self.strategy = 0
+        self.weights_history = []
 
 
     def iteration(self, weights):
@@ -114,48 +102,23 @@ class Node(INode):
         values = np.asarray(arguments['Интенсивности'])
 
         u = self.uniformity(values / self.design)
-
-        if (len(self.best_uniformity) == 0) or (u > self.best_uniformity[-1]):
-            self.best_uniformity.append(u)
-            self.best_weights.append(weights)
-            self.best_intensities.append(values)
-
-            print('best')
-
-            self.output_sockets['BEST'].set_value(True)
-
-        else:
-            self.velocity = self.velocity / self.momentum
-            print('worst', self.velocity)
-
-            self.output_sockets['NOT BEST'].set_value(True)
-
-
-        self.weights_history.append(weights)
-        self.intensities_history.append(values)
         self.u_history.append(u)
+
+        self.intensities_history.append(values)
+        self.weights_history.append(weights)
 
         self.output_sockets['После Итерации'].set_value(True)
 
     def execute(self):
 
-        self.u_history = []
-        self.weights_history = []
         self.intensities_history = []
-        self.gradient_history = []
-
-        self.best_weights = []
-        self.best_uniformity = []
-        self.best_intensities = []
-
-        self.solution = []
-
+        self.u_history = []
         self.design = []
+
+        self.weights_history = []
 
         arguments = self.get_func_inputs()
         self.velocity = arguments['Скорость']
-
-        self.momentum = arguments['Момент']
 
         self.design = np.asarray(arguments['Целевое Распределение'])
 
@@ -169,17 +132,17 @@ class Node(INode):
 
 
 
-            if self.checkbox.get() == 'on':
-                weights = self.best_weights[-1]
-            else:
-                weights = self.weights_history[-1]
-
-            gradient = (self.design / np.max(self.design) - values)
+            gradient = np.average(values) - values/self.design
+            # gradient = random_zero(gradient, self.strategy)
             print(gradient)
-            self.gradient_history.append(gradient)
+            print(np.linalg.norm(gradient))
+
             weights = weights + self.velocity * gradient
 
+
             self.iteration(weights)
+
+
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
@@ -190,7 +153,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Новый Декабрь', 'gradient'
+        return Node, 'New Operator', 'gradient'
 
     def prepare_save_spec(self):
         data = {}

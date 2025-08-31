@@ -53,8 +53,9 @@ class Node(INode):
         d = np.sum(np.abs(intensities - design))
         intensities = list(intensities)
 
-        uniformity = 1 - (np.max(intensities) - np.min(intensities)) / (np.max(intensities) + np.min(intensities))
+        uniformity = 1 - (np.max(intensities / design) - np.min(intensities / design)) / (np.max(intensities / design) + np.min(intensities / design))
 
+        intensities = list(intensities)
 
         self.output_sockets['Вектор I'].set_value(intensities)
         self.output_sockets['Uniformity'].set_value(uniformity)

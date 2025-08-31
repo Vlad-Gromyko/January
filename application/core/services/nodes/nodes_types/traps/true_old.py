@@ -4,6 +4,42 @@ import customtkinter as ctk
 from application.core.services.nodes.node import INode
 import datetime
 
+def random_zero(vector, zero_ratio=0.3):
+    """
+    Обнуляет случайные элементы вектора с использованием NumPy.
+
+    Args:
+        vector: входной вектор (list или numpy array)
+        zero_ratio: доля элементов для обнуления (0-1)
+
+    Returns:
+        Вектор с обнуленными элементами
+    """
+    arr = np.array(vector)
+
+    if zero_ratio == 0:
+        return arr
+
+    if len(arr) == 0:
+        return arr
+
+    # Не даем обнулить все элементы
+    zero_ratio = min(zero_ratio, 0.99)
+
+    # Создаем маску для обнуления
+    mask = np.random.random(len(arr)) < zero_ratio
+
+    # Проверяем, что не обнуляем все элементы
+    if np.all(mask):
+        # Отменяем обнуление для одного случайного элемента
+        idx = np.random.randint(0, len(arr))
+        mask[idx] = False
+
+    # Применяем маску
+    result = arr.copy()
+    result[mask] = 0
+
+    return result
 
 class Node(INode):
     def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
@@ -14,10 +50,7 @@ class Node(INode):
         self.add_enter_socket('Число Итераций', self.palette['NUM'])
         self.add_enter_socket('Целевое Распределение', self.palette['vector1d'])
         self.add_enter_socket('Скорость', self.palette['NUM'])
-        self.add_enter_socket('Степень U', self.palette['NUM'])
-        self.add_enter_socket('Разложение', self.palette['NUM'])
 
-        self.add_enter_socket('Момент', self.palette['NUM'])
         self.add_enter_socket('Решение', self.palette['vector1d'])
 
         self.add_enter_socket('Интенсивности', self.palette['vector1d'])
@@ -48,11 +81,11 @@ class Node(INode):
         self.intensities_history = []
         self.u_history = []
 
-        self.momentum = 1
         self.velocity = 1
-        self.power = 1
-        self.decay = 1
+
         self.weights_history = []
+
+        self.norm_velocity = None
 
 
     def iteration(self, weights):
@@ -72,6 +105,7 @@ class Node(INode):
 
         self.intensities_history.append(values)
         self.weights_history.append(weights)
+        self.output_sockets['После Итерации'].set_value(True)
 
 
     def execute(self):
@@ -80,15 +114,14 @@ class Node(INode):
         self.u_history = []
         self.design = []
 
+        self.norm_velocity = None
+
         self.weights_history = []
 
         arguments = self.get_func_inputs()
         self.velocity = arguments['Скорость']
 
-        self.power = arguments['Степень U']
-        self.decay = arguments['Разложение']
 
-        self.momentum = arguments['Момент']
 
         self.design = np.asarray(arguments['Целевое Распределение'])
 
@@ -103,12 +136,19 @@ class Node(INode):
 
 
             gradient = (self.design / np.max(self.design) - values)
-            print(gradient)
+            norm = np.linalg.norm(gradient)
+            if self.norm_velocity is None:
+                self.norm_velocity = norm
+            else:
+                self.norm_velocity = min(self.norm_velocity, norm)
 
-            weights = weights + self.velocity * gradient * np.exp(-k * self.decay)
-            if len(self.weights_history) > 1:
+            gradient = gradient / self.norm_velocity
 
-                weights = weights - self.momentum * (weights - self.weights_history[-1])
+            print(np.linalg.norm(gradient))
+
+            weights = weights + self.velocity * self.norm_velocity * gradient
+
+            print('NV  ',self.norm_velocity, norm)
 
             self.iteration(weights)
 
