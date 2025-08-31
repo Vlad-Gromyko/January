@@ -89,7 +89,6 @@ class Node(INode):
 
         self.output_sockets['Сумма'].set_value(result_thresh + result_sym + result_mds + result_ellipse)
 
-        print(result_thresh, result_sym, result_mds)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
