@@ -3,6 +3,7 @@ from math import floor
 import numpy
 import numpy as np
 import customtkinter as ctk
+
 from application.core.services.nodes.node import INode
 
 
@@ -21,6 +22,7 @@ class Node(INode):
         self.add_enter_socket('Лямбда', self.palette['NUM'])
         self.add_enter_socket('Эпсилон', self.palette['NUM'])
         self.add_enter_socket('Распад', self.palette['NUM'])
+        self.add_enter_socket('K-Градиент', self.palette['NUM'])
 
         self.add_enter_socket('Решение', self.palette['vector1d'])
         self.add_enter_socket('Метрика', self.palette['NUM'])
@@ -93,6 +95,107 @@ class Node(INode):
                                              variable=self.check_step, onvalue="on", offvalue="off")
         self.checkbox_step.grid(row=3, column=1, padx=5, pady=5)
 
+        values_grad = ['Random Gradient', 'K-Gradient', 'Gradient']
+
+        self.combo_grad = ctk.CTkComboBox(frame_widgets, values=values_grad)
+        self.combo_grad.set('Random Gradient')
+        self.combo_grad.grid(row=4, column=1, padx=5, pady=5)
+
+    def real_gradient(self):
+        arguments = self.get_func_inputs()
+
+        u = np.asarray(arguments['Решение'].copy())
+        num = len(arguments['Решение'])
+
+        gradient = np.zeros_like(u)
+
+        for i in range(num):
+            u_minus = u.copy()
+            u_plus = u.copy()
+
+            u_minus[i] -= self.step
+            u_plus[i] += self.step
+
+            self.output_sockets['Решение +- Шаг'].set_value(list(u_plus))
+            self.output_sockets['Метрика'].set_value(True)
+
+            arguments = self.get_func_inputs()
+            m_plus = arguments['Метрика']
+
+            self.output_sockets['Решение +- Шаг'].set_value(list(u_minus))
+            self.output_sockets['Метрика'].set_value(True)
+
+            arguments = self.get_func_inputs()
+            m_minus = arguments['Метрика']
+
+            gradient[i] = (m_plus - m_minus) / (2 * self.step)
+
+        return gradient
+
+    def random_gradient(self):
+        arguments = self.get_func_inputs()
+
+        u = np.asarray(arguments['Решение'].copy())
+        num = len(arguments['Решение'])
+
+        steps = np.random.choice([-1, 1], size=num)
+
+        u_plus = u + steps * self.step
+        u_minus = u - steps * self.step
+
+        self.output_sockets['Решение +- Шаг'].set_value(list(u_plus))
+        self.output_sockets['Метрика'].set_value(True)
+
+        arguments = self.get_func_inputs()
+        m_plus = arguments['Метрика']
+
+        self.output_sockets['Решение +- Шаг'].set_value(list(u_minus))
+        self.output_sockets['Метрика'].set_value(True)
+
+        arguments = self.get_func_inputs()
+        m_minus = arguments['Метрика']
+
+        gradient = (m_plus - m_minus) / (2 * self.step) * steps
+
+        return gradient
+
+    def zero_gradient(self):
+        arguments = self.get_func_inputs()
+
+        u = np.asarray(arguments['Решение'].copy())
+        num = len(arguments['Решение'])
+
+        self.output_sockets['Решение +- Шаг'].set_value(list(u))
+        self.output_sockets['Метрика'].set_value(True)
+
+        arguments = self.get_func_inputs()
+        m_zero = arguments['Метрика']
+
+        k = arguments['K-Градиент']
+
+        vectors = []
+        m_values = []
+
+        for i in range(int(k)):
+            vector = np.random.choice([-1, 1], size=num)
+
+            vectors.append(vector)
+
+            self.output_sockets['Решение +- Шаг'].set_value(list(u + self.step * vector))
+            self.output_sockets['Метрика'].set_value(True)
+
+            arguments = self.get_func_inputs()
+            metric = arguments['Метрика']
+
+            m_values.append(metric)
+
+        gradient = np.zeros_like(u)
+
+        for j in range(int(k)):
+            gradient = gradient + (m_values[j] - m_zero) * vectors[j] / k / self.step
+
+        return gradient
+
     def execute(self):
         arguments = self.get_func_inputs()
 
@@ -117,26 +220,12 @@ class Node(INode):
             arguments = self.get_func_inputs()
             self.output_sockets['Индекс'].set_value(i)
 
-            steps = np.random.choice([-1, 1], size=num)
-
-            u = np.asarray(arguments['Решение'].copy())
-
-            u_plus = u + steps * self.step
-            u_minus = u - steps * self.step
-
-            self.output_sockets['Решение +- Шаг'].set_value(list(u_plus))
-            self.output_sockets['Метрика'].set_value(True)
-
-            arguments = self.get_func_inputs()
-            m_plus = arguments['Метрика']
-
-            self.output_sockets['Решение +- Шаг'].set_value(list(u_minus))
-            self.output_sockets['Метрика'].set_value(True)
-
-            arguments = self.get_func_inputs()
-            m_minus = arguments['Метрика']
-
-            gradient = (m_plus - m_minus) / (2 * self.step) * steps
+            if self.combo_grad.get() == 'Random Gradient':
+                gradient = self.random_gradient()
+            elif self.combo_grad.get() == 'K-Gradient':
+                gradient = self.zero_gradient()
+            else:
+                gradient = self.real_gradient()
 
             if self.combo.get() == 'Gradient':
                 prognosis = self.velocity * gradient
@@ -179,6 +268,8 @@ class Node(INode):
                 self.plan = np.exp(-ratio)
             elif self.combo_lr.get() == 'Constant':
                 self.plan = 1
+
+            u = np.asarray(arguments['Решение'].copy())
 
             result = u - prognosis * self.plan
 

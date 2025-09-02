@@ -17,24 +17,22 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_output_socket('', self.palette['HOLOGRAM'])
+        self.add_output_socket('', self.palette['vector1d'])
 
         self.load_data = kwargs
-        self.strong_control = True
+        self.strong_control = False
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        array = np.random.uniform(low=0, high=2 * np.pi, size=(1200, 1920))
-
-        self.output_sockets[''].set_value(Mask(array))
+        self.output_sockets[''].set_value([])
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Рандомная Голограмма', 'hologram'
+        return Node, '[]', 'Container'
 
     def prepare_save_spec(self):
         data = {}

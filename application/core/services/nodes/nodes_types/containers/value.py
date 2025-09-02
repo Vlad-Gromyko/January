@@ -87,7 +87,7 @@ class Node(INode):
         name = event.get_value()['name']
         tab = event.get_value()['tab']
 
-        if name == self.vector_name:
+        if name == self.vector_name and self.value_type != event.get_value()['type']:
             self.output_sockets[''].set_color(self.palette[event.get_value()['type']])
             self.enter_sockets[''].set_color(self.palette[event.get_value()['type']])
             self.combo.set(event.get_value()['type'])

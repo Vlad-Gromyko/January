@@ -20,12 +20,12 @@ class Node(INode):
         self.add_output_socket('', self.palette['HOLOGRAM'])
 
         self.load_data = kwargs
-        self.strong_control = True
+        self.strong_control = False
 
     def execute(self):
         arguments = self.get_func_inputs()
 
-        array = np.random.uniform(low=0, high=2 * np.pi, size=(1200, 1920))
+        array = np.zeros((1200, 1920))
 
         self.output_sockets[''].set_value(Mask(array))
 
@@ -34,7 +34,7 @@ class Node(INode):
 
     @staticmethod
     def create_info():
-        return Node, 'Рандомная Голограмма', 'hologram'
+        return Node, 'Плоская Голограмма', 'hologram'
 
     def prepare_save_spec(self):
         data = {}
