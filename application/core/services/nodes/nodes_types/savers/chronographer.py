@@ -56,7 +56,7 @@ class Node(INode):
         items = os.listdir(directory)
 
         # Фильтруем только файлы (исключаем поддиректории)
-        files = [item for item in items if os.path.isfile(os.path.join(directory, item))]
+        files = [item for item in items if os.path.isdir(os.path.join(directory, item))]
 
         return len(files)
 
