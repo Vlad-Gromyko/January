@@ -23,7 +23,7 @@ class Node(INode):
 
         self.load_data = kwargs
 
-        self.strong_control = True
+        self.strong_control = False
     def execute(self):
         timer = time.time()
         arguments = self.get_func_inputs()

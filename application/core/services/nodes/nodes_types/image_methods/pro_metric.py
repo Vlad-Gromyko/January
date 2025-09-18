@@ -106,10 +106,11 @@ class Node(INode):
 
         mds = np.sum(((x - x_c) ** 2 + (y - y_c) ** 2) * image) / np.sum(image)
 
-        radius = int(self.entry_bucket.get())
-
 
         self.output_sockets['Шум'].set_value(noise)
+        self.output_sockets['Отфильтрованное изображение'].set_value(image)
+
+        self.output_sockets['MDS'].set_value(mds)
 
 
         self.ax.cla()
