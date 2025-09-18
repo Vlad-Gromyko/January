@@ -97,6 +97,15 @@ class Zernike(Service, ctk.CTkToplevel):
             ('', 7, 3),
             ('', 7, 5),
             ('', 7, 7),
+            ('', 8, -8),
+            ('', 8, -6),
+            ('', 8, -4),
+            ('', 8, -2),
+            ('', 8, 0),
+            ('', 8, 2),
+            ('', 8, 4),
+            ('', 8, 6),
+            ('', 8, 8),
         ]
 
         for counter, item in enumerate(self.names):
@@ -217,23 +226,23 @@ class Zernike(Service, ctk.CTkToplevel):
 
     def calculate_one(self, number, amplitude):
 
-        self.slm_width = self.event_bus.get_field('slm width')
-        self.slm_height = self.event_bus.get_field('slm height')
+        #self.slm_width = self.event_bus.get_field('slm width')
+        #self.slm_height = self.event_bus.get_field('slm height')
 
-        self.pixel_in_um = self.event_bus.get_field('slm pixel')
+        #self.pixel_in_um = self.event_bus.get_field('slm pixel')
 
-        radius_y = 1
+        #radius_y = 1
 
-        radius_x = radius_y / self.slm_height * self.slm_width
+        #radius_x = radius_y / self.slm_height * self.slm_width
 
-        _x = np.linspace(-radius_x, radius_x, self.slm_width)
-        _y = np.linspace(-radius_y, radius_y, self.slm_height)
+        #_x = np.linspace(-radius_x, radius_x, self.slm_width)
+        #_y = np.linspace(-radius_y, radius_y, self.slm_height)
 
-        _x, _y = np.meshgrid(_x, _y)
+        #_x, _y = np.meshgrid(_x, _y)
 
-        self.r = np.sqrt(_x ** 2 + _y ** 2)
+        #self.r = np.sqrt(_x ** 2 + _y ** 2)
 
-        self.phi = np.arctan2(_y, _x)
+        #self.phi = np.arctan2(_y, _x)
 
 
         array = np.zeros((self.slm_height, self.slm_width))
@@ -302,7 +311,7 @@ class Zernike(Service, ctk.CTkToplevel):
         floor = np.min(array)
 
         if floor < 0:
-            array = array + floor
+            array = array - floor
 
         return array % (2 * np.pi)
 

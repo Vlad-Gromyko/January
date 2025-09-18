@@ -63,7 +63,7 @@ class Node(INode):
 
         elif isinstance(value, Mask):
 
-            self.ax.imshow(value.get_array(), cmap='gray')
+            self.ax.imshow(value.get_array(), cmap='gray', vmin=0, vmax=2 * np.pi)
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
 
@@ -75,9 +75,23 @@ class Node(INode):
             center_x = width // 2
             center_y = height // 2
 
-            # Рисуем вертикальную и горизонтальную линии (перекрестие)
+
+            x = np.linspace(0, width, width)
+            y = np.linspace(0, height, height)
+
+            x, y = np.meshgrid(x, y)
+
+            x_coord = int(np.sum(value * x) / np.sum(value))
+            y_coord = int(np.sum(value * y) / np.sum(value))
+
+
+
             self.ax.axhline(y=center_y, color='blue', linestyle='--', linewidth=1)
             self.ax.axvline(x=center_x, color='blue', linestyle='--', linewidth=1)
+
+            self.ax.axhline(y=y_coord, color='green', linestyle='--', linewidth=1)
+            self.ax.axvline(x=x_coord, color='green', linestyle='--', linewidth=1)
+
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
 

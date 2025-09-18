@@ -1,7 +1,9 @@
+
 from application.core.events import Event
 from application.core.services.nodes.node import INode
 import customtkinter as ctk
 import time
+from functools import reduce
 
 
 class Node(INode):
@@ -10,28 +12,35 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Вектор', self.palette['vector2d'])
-        self.add_enter_socket('Строка', self.palette['NUM'])
-        self.add_enter_socket('Столбец', self.palette['NUM'])
+        self.add_enter_socket('Вектор A', self.palette['vector1d'])
+        self.add_enter_socket('Вектор B', self.palette['vector1d'])
 
+        self.add_output_socket('', self.palette['vector1d'])
 
-        self.add_output_socket('Элемент', self.palette['ANY'])
         self.load_data = kwargs
 
         self.strong_control = True
     def execute(self):
+
         arguments = self.get_func_inputs()
 
-        vector = arguments['Вектор']
-        vector = self.editor.matrices[vector].copy()
-        num1 = int(arguments['Строка'])
-        num2 = int(arguments['Столбец'])
+        vector_a = arguments['Вектор A'].copy()
+        vector_b = arguments['Вектор B'].copy()
 
-        self.output_sockets[''].set_value(vector[num1][num2])
+        vector_a.extend(vector_b)
+
+
+        self.output_sockets[''].set_value(vector_a)
+
+        print('aaaa')
+
+
+        if 'go' in self.output_sockets.keys():
+            self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Get 2', 'Container'
+        return Node, 'A.extend(B)', 'Container'
 
     @staticmethod
     def possible_to_create():

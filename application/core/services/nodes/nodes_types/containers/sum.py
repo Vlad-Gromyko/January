@@ -3,6 +3,7 @@ from application.core.events import Event
 from application.core.services.nodes.node import INode
 import customtkinter as ctk
 import time
+from functools import reduce
 
 
 class Node(INode):
@@ -19,24 +20,24 @@ class Node(INode):
 
         self.strong_control = True
     def execute(self):
+        timer = time.time()
         arguments = self.get_func_inputs()
 
         vector = arguments['Вектор'].copy()
 
-        result = vector[0]
-
-        for i in range(1, len(vector)):
-            result = result + vector[i]
+        result = reduce(lambda x, y: x + y, vector)
 
 
         self.output_sockets[''].set_value(result)
+
+        print(time.time() - timer)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
     @staticmethod
     def create_info():
-        return Node, 'Sum', 'Container'
+        return Node, 'SUM', 'Container'
 
     @staticmethod
     def possible_to_create():

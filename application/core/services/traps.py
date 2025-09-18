@@ -353,7 +353,7 @@ class ImageGeometry(TrapsGeometry):
         ask = askopenfilename()
         if ask:
             img = Image.open(ask).convert('L')
-            img = ImageEnhance.Sharpness(img).enhance(2)
+            img = ImageEnhance.Sharpness(img).enhance(3)
             img = img.resize((x_n, y_n))
             img = np.asarray(img)
             img = img / np.max(img)

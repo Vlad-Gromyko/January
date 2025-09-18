@@ -13,7 +13,7 @@ class Node(INode):
 
         self.add_enter_socket('S', self.palette['vector2d'])
         self.add_enter_socket('M', self.palette['vector1d'])
-        self.add_enter_socket('Beta', self.palette['NUM'])
+        self.add_enter_socket('Шаг', self.palette['NUM'])
 
         self.add_output_socket('Вектор', self.palette['vector1d'])
 
@@ -22,17 +22,17 @@ class Node(INode):
     def execute(self):
         arguments = self.get_func_inputs()
 
-        s = np.asarray(arguments['S'])
-        s_inv = np.asarray(arguments['S'])
+        s = np.asarray(arguments['S']).copy()
+        s_inv = np.asarray(arguments['S']).copy()
         m = np.asarray(arguments['M'])
-        beta = arguments['Beta']
+        beta = arguments['Шаг']
         sm = s.diagonal()
         c = 1 / 4 / np.pi ** 2
 
-        #vector = np.dot(np.linalg.inv(s), m) / 2 * c / beta - beta * beta * np.dot(np.linalg.inv(s), sm) / 2
-        vector = np.dot(s_inv, m) / 2 / c / beta - beta * np.dot(s_inv, sm) / 2
+
+        vector = (c * np.dot(s_inv, m) * m - beta**2 * np.dot(s_inv, sm) ) / 2 / beta
         vector = list(vector)
-        print('aaaaaaaaa', vector)
+
         self.output_sockets['Вектор'].set_value(vector)
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
