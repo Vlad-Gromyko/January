@@ -48,6 +48,9 @@ class Node(INode):
             self.ax.axis("off")
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
+
+        elif value is None:
+            pass
         elif isinstance(value, bool):
 
             if value:
