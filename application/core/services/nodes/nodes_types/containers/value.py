@@ -115,6 +115,9 @@ class Node(INode):
 
         self.output_sockets[''].set_value(arguments[''])
 
+        if self.value_type == 'signal':
+            self.output_sockets[''].set_value(None)
+
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 

@@ -1,12 +1,8 @@
-import customtkinter as ctk
-import os
-from application.core.events import Event
-from application.core.services.nodes.node import INode
-from tkinter.filedialog import askdirectory
-from matplotlib import cm
-from PIL import Image
-
+import numpy
 import numpy as np
+import customtkinter as ctk
+from application.core.services.nodes.node import INode
+
 
 class Node(INode):
     def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
@@ -14,35 +10,29 @@ class Node(INode):
 
         self.special_id = special_id
 
-        self.add_enter_socket('Снимки', self.palette['vector1d'])
-        self.add_output_socket('Снимок', self.palette['CAMERA_SHOT'])
+        self.add_enter_socket('', self.palette['vector1d'])
 
+        self.add_output_socket('MIN', self.palette['vector1d'])
+        self.add_output_socket('MAX', self.palette['vector1d'])
 
         self.load_data = kwargs
         self.strong_control = False
 
-
     def execute(self):
         arguments = self.get_func_inputs()
 
-        shots = arguments['Снимки']
+        minimums = np.min(np.asarray(arguments['']), axis=0)
+        maximums = np.max(np.asarray(arguments['']), axis=0)
 
-        shots = np.asarray(shots)
-
-        processed = np.median(shots, axis=0)
-
-
-        self.output_sockets['Снимок'].set_value(processed)
-
-
+        self.output_sockets['MIN'].set_value(minimums)
+        self.output_sockets['MAX'].set_value(maximums)
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
 
-
     @staticmethod
     def create_info():
-        return Node, 'Медианный Фильтр', 'camera'
+        return Node, 'Range', 'strategy'
 
     def prepare_save_spec(self):
         data = {}

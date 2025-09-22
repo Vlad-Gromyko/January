@@ -268,10 +268,10 @@ class INode(CanvasElement, Service):
             if go and white_go:
                 # print('execute')
                 self.choose()
-                circ = self.canvas.create_oval(self.x - 10, self.y - 10, self.x + 10, self.y + 10, fill="#00FF00")
+
                 self.canvas.update_idletasks()
                 self.execute()
-                self.canvas.delete(circ)
+
                 self.no_choose()
                 for name in self.output_sockets.keys():
                     if self.output_sockets[name].color == self.palette['SIGNAL']:

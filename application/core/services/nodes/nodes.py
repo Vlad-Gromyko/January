@@ -56,7 +56,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
         self.fields['Canvas Names'] = []
 
-        self.scroll = ctk.CTkScrollableFrame(self.frame_buttons, orientation='horizontal', height=25, width=900)
+        self.scroll = ctk.CTkScrollableFrame(self.frame_buttons, orientation='horizontal', height=25, width=1200)
         self.scroll.grid(row=0, column=6, padx=5, sticky='ew')
 
         self.events_reactions['Canvas Close'] = lambda event: self.close_canvas(event.get_value())
@@ -66,6 +66,8 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         self.events_reactions['Canvas Add Node'] = lambda event: self.add_node(event.get_value())
 
         self.config = None
+
+
 
     def add_text(self):
         ask = askstring('Текстовый Маркер', 'Введите Текст:')
@@ -151,7 +153,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
         folders = os.listdir(canvases_folder)
 
         if len(folders) == 0:
-            self.add_canvas('Новый Холст')
+            pass
         else:
             items = os.listdir(canvases_folder)
 

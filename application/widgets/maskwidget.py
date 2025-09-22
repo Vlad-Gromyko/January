@@ -32,6 +32,8 @@ class MaskLabel(ctk.CTkFrame):
         plt.colorbar(im)
         plt.show()
 
+
+
     def save_bmp(self, mode='bmp'):
         new_file = fd.asksaveasfile(title="Сохранить голограмму", defaultextension=".bmp",
                                     filetypes=[('Numpy', '*.npy'), ('BitMap', '*.bmp*')], confirmoverwrite=True)

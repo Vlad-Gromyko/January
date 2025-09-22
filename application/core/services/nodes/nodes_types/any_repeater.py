@@ -42,6 +42,7 @@ class Node(INode):
 
 
         self.ax.cla()
+        plt.tight_layout()
 
         if isinstance(value, float) or isinstance(value, int):
             self.ax.text(0.5, 0.5, str(value), ha='center', va='center', size=40)

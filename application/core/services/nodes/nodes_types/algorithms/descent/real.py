@@ -1,6 +1,3 @@
-from math import floor
-
-import numpy
 import numpy as np
 import customtkinter as ctk
 
@@ -43,13 +40,16 @@ class Node(INode):
 
         self.add_output_socket('После Итерации', self.palette['SIGNAL'])
 
+        self.add_output_socket('Лучшее Решение', self.palette['vector1d'])
+        self.add_output_socket('Лучшая Метрика', self.palette['NUM'])
+
         self.previous = None
 
         self.load_data = kwargs
         self.strong_control = True
 
         self.widget_width = 400
-        self.widget_height = 200
+        self.widget_height = 300
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
         self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
                                                               anchor=ctk.NW, width=self.widget_width,
@@ -58,13 +58,13 @@ class Node(INode):
         values = ['Gradient', 'AdaGrad', 'RMSProp', 'Adam', 'AdaMax', 'AdamW']
 
         self.combo = ctk.CTkComboBox(frame_widgets, values=values)
-        self.combo.set('AdaGrad')
+        self.combo.set('Adam')
         self.combo.grid(row=0, column=1, padx=5, pady=5)
 
         ctk.CTkLabel(frame_widgets, text='Стратегия').grid(row=0, column=0, padx=5, pady=5)
         ctk.CTkLabel(frame_widgets, text='Планировщик').grid(row=1, column=0, padx=5, pady=5)
 
-        values_lr = ['Hyberbolical', 'Exponential', 'Constant']
+        values_lr = ['Hyberbolical', 'Exponential']
 
         self.combo_lr = ctk.CTkComboBox(frame_widgets, values=values_lr)
         self.combo_lr.set('Hyberbolical')
@@ -100,6 +100,41 @@ class Node(INode):
         self.combo_grad = ctk.CTkComboBox(frame_widgets, values=values_grad)
         self.combo_grad.set('Random Gradient')
         self.combo_grad.grid(row=4, column=1, padx=5, pady=5)
+
+        self.velocity_check_var = ctk.StringVar(value="off")
+        self.checkbox_velocity = ctk.CTkCheckBox(frame_widgets, text="Скорость", variable=self.velocity_check_var,
+                                                 onvalue="on", offvalue="off", )
+        self.checkbox_velocity.grid(row=5, column=0, padx=5, pady=5)
+
+        self.step_check_var = ctk.StringVar(value="off")
+        self.checkbox_step = ctk.CTkCheckBox(frame_widgets, text="Шаг", variable=self.step_check_var, onvalue="on",
+                                             offvalue="off", )
+        self.checkbox_step.grid(row=5, column=1, padx=5, pady=5)
+
+        self.check_delete_way = ctk.StringVar(value="on")
+        self.checkbox_save_way = ctk.CTkCheckBox(frame_widgets, text="Авто-Обнуление G", onvalue="on", offvalue="off",
+                                                 variable=self.check_delete_way)
+        self.checkbox_save_way.grid(row=6)
+
+        ctk.CTkButton(frame_widgets, text="Обнулить", command=self.g_to_zero).grid(row=6, column=1, padx=5, pady=5)
+
+        self.best_metric = None
+        self.best_solution = None
+
+    def g_to_zero(self):
+        self.g = 0
+        self.m_hat = 0
+        self.v_hat = 0
+        self.m = 0
+        self.v = 0
+
+        self.best_metric = None
+        self.best_solution = None
+
+    def update_best(self, metric_value, solution):
+        if self.best_metric is None or metric_value < self.best_metric:
+            self.best_metric = metric_value
+            self.best_solution = solution
 
     def real_gradient(self):
         arguments = self.get_func_inputs()
@@ -149,11 +184,15 @@ class Node(INode):
         arguments = self.get_func_inputs()
         m_plus = arguments['Метрика']
 
+        self.update_best(m_plus, u_plus)
+
         self.output_sockets['Решение +- Шаг'].set_value(list(u_minus))
         self.output_sockets['Метрика'].set_value(True)
 
         arguments = self.get_func_inputs()
         m_minus = arguments['Метрика']
+
+        self.update_best(m_minus, u_minus)
 
         gradient = (m_plus - m_minus) / (2 * self.step) * steps
 
@@ -171,6 +210,8 @@ class Node(INode):
         arguments = self.get_func_inputs()
         m_zero = arguments['Метрика']
 
+        self.update_best(m_zero, u)
+
         k = arguments['K-Градиент']
 
         vectors = []
@@ -187,6 +228,8 @@ class Node(INode):
             arguments = self.get_func_inputs()
             metric = arguments['Метрика']
 
+            self.update_best(metric, u + self.step * vector)
+
             m_values.append(metric)
 
         gradient = np.zeros_like(u)
@@ -202,15 +245,16 @@ class Node(INode):
         self.step = arguments['Шаг']
         self.velocity = arguments['Скорость']
         self._lambda = arguments['Лямбда']
-        self.g = 0
+
         self.epsilon = arguments['Эпсилон']
-        self.m_hat = 0
-        self.v_hat = 0
-        self.m = 0
-        self.v = 0
+
         self.beta_1 = arguments['Бета 1']
         self.beta_2 = arguments['Бета 2']
         self.decay = arguments['Распад']
+
+        if self.check_delete_way.get() == 'on':
+            self.g_to_zero()
+            print('zero')
 
         num = len(arguments['Решение'])
 
@@ -263,11 +307,15 @@ class Node(INode):
                 ratio = i / self.decay
 
             if self.combo_lr.get() == 'Hyberbolical':
-                self.plan = 1 / (1 + ratio)
+                if self.velocity_check_var.get() == 'on':
+                    self.plan = 1 / (1 + ratio)
+                if self.step_check_var.get() == 'on':
+                    self.step = self.step / (1 + ratio)
             elif self.combo_lr.get() == 'Exponential':
-                self.plan = np.exp(-ratio)
-            elif self.combo_lr.get() == 'Constant':
-                self.plan = 1
+                if self.velocity_check_var.get() == 'on':
+                    self.plan = np.exp(-ratio)
+                if self.step_check_var.get() == 'on':
+                    self.step = self.step * np.exp(-ratio)
 
             u = np.asarray(arguments['Решение'].copy())
 
@@ -287,6 +335,9 @@ class Node(INode):
 
             self.output_sockets['Шаг'].set_value(self.step)
             self.output_sockets['Триггер Шага'].set_value(True)
+
+            self.output_sockets['Лучшее Решение'].set_value(self.best_solution)
+            self.output_sockets['Лучшая Метрика'].set_value(self.best_metric)
 
             self.output_sockets['После Итерации'].set_value(True)
 
