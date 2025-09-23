@@ -62,7 +62,7 @@ class Node(INode):
 
         estimator = self.combobox.get()
         acq = self.combobox_acq.get()
-        self.optimizer = Optimizer(space, base_estimator=estimator, acq_func=acq, n_initial_points=0)
+        self.optimizer = Optimizer(space, base_estimator=estimator, acq_func=acq, n_initial_points=5)
         self.label_errors.configure(text=f'Отброшенных значений: 0')
 
     def teach(self):

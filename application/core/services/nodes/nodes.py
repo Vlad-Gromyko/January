@@ -56,7 +56,7 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
         self.fields['Canvas Names'] = []
 
-        self.scroll = ctk.CTkScrollableFrame(self.frame_buttons, orientation='horizontal', height=25, width=1200)
+        self.scroll = ctk.CTkScrollableFrame(self.frame_buttons, orientation='horizontal', height=25, width=1050)
         self.scroll.grid(row=0, column=6, padx=5, sticky='ew')
 
         self.events_reactions['Canvas Close'] = lambda event: self.close_canvas(event.get_value())

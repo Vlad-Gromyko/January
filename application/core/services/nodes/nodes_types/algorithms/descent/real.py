@@ -134,7 +134,7 @@ class Node(INode):
     def update_best(self, metric_value, solution):
         if self.best_metric is None or metric_value < self.best_metric:
             self.best_metric = metric_value
-            self.best_solution = solution
+            self.best_solution = list(solution)
 
     def real_gradient(self):
         arguments = self.get_func_inputs()
