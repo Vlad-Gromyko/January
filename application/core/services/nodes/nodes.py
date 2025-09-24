@@ -67,8 +67,6 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
 
         self.config = None
 
-
-
     def add_text(self):
         ask = askstring('Текстовый Маркер', 'Введите Текст:')
         if ask:
@@ -186,9 +184,8 @@ class NodeEditor(Service, ctk.CTkFrame, TkinterDnD.DnDWrapper):
                 elif f.split('.')[-1] == 'txt':
                     wires = dir_path + '/' + f
 
-
         if containers:
-            print('aaaaaaaaaaaaaaaaaaaa')
+
             self.load_containers(containers)
 
         if wires:

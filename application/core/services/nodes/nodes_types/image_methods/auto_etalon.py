@@ -54,8 +54,8 @@ class Node(INode):
         y = np.linspace(-w / 2, w / 2, w)
         x, y = np.meshgrid(x, y)
 
-        x_coord = w //2
-        y_coord = h //2
+        x_coord = 0
+        y_coord = 0
 
         if self.check_var.get() == "on":
             x_coord = int(np.sum(image * x) / np.sum(image))

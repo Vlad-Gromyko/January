@@ -85,6 +85,8 @@ class EventBus:
         return answer
 
     def raise_event(self, event: Event):
+        if event.get_name() == 'Save Project':
+            self.raise_event(Event('Show Splash'))
         if event.get_name() == 'Load':
             self.project_path = event.get_value()
             #print(event.get_value())

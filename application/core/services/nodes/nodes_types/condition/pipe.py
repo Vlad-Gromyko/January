@@ -34,7 +34,6 @@ class Node(INode):
         if self.execution_status:
             self.execution_status = False
             self.button.configure( fg_color='red')
-            self.execute()
         else:
             self.execution_status = True
             self.button.configure( fg_color='green')
