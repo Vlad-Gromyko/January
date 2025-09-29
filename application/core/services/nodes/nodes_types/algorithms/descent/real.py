@@ -56,7 +56,7 @@ class Node(INode):
                                                               anchor=ctk.NW, width=self.widget_width,
                                                               height=self.widget_height)
 
-        values = ['Gradient', 'AdaGrad', 'RMSProp', 'Adam', 'AdaMax', 'AdamW']
+        values = ['Gradient', 'AdaGrad', 'RMSProp', 'AdaMax', 'Adam', 'AdamW', 'AdamL2', 'AdamWL2']
 
         self.combo = ctk.CTkComboBox(frame_widgets, values=values)
         self.combo.set('Adam')
@@ -310,6 +310,49 @@ class Node(INode):
                 self.v_hat = self.v / (1 - self.beta_2 ** (i + 1))
 
                 prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
+
+            elif self.combo.get() == 'AdamW':
+                if i == 0:
+                    self.m = gradient
+                    self.v = gradient ** 2
+                else:
+                    self.m = self.m * self.beta_1 + (1 - self.beta_1) * gradient
+                    self.v = self.v * self.beta_2 + (1 - self.beta_2) * gradient ** 2
+
+                self.m_hat = self.m / (1 - self.beta_1 ** (i + 1))
+                self.v_hat = self.v / (1 - self.beta_2 ** (i + 1))
+
+                prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
+
+                prognosis = prognosis + self._lambda * self.previous
+
+            elif self.combo.get() == 'AdamL2':
+                if i == 0:
+                    self.m = (gradient + self._lambda * self.previous)
+                    self.v = (gradient + self._lambda * self.previous) ** 2
+                else:
+                    self.m = self.m * self.beta_1 + (1 - self.beta_1) * (gradient + self._lambda * self.previous)
+                    self.v = self.v * self.beta_2 + (1 - self.beta_2) * (gradient + self._lambda * self.previous) ** 2
+
+                self.m_hat = self.m / (1 - self.beta_1 ** (i + 1))
+                self.v_hat = self.v / (1 - self.beta_2 ** (i + 1))
+
+                prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
+
+            elif self.combo.get() == 'AdamWL2':
+                if i == 0:
+                    self.m = (gradient + self._lambda * self.previous)
+                    self.v = (gradient + self._lambda * self.previous) ** 2
+                else:
+                    self.m = self.m * self.beta_1 + (1 - self.beta_1) * (gradient + self._lambda * self.previous)
+                    self.v = self.v * self.beta_2 + (1 - self.beta_2) * (gradient + self._lambda * self.previous) ** 2
+
+                self.m_hat = self.m / (1 - self.beta_1 ** (i + 1))
+                self.v_hat = self.v / (1 - self.beta_2 ** (i + 1))
+
+                prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
+                prognosis = prognosis + self._lambda * self.previous
+
 
             else:
                 prognosis = 0

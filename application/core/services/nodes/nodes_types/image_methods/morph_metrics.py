@@ -108,7 +108,7 @@ class Node(INode):
         image_a = image / np.max(image)
         image_b = gauss / np.max(gauss)
 
-        dssim = (1 - ssim(image_a, image_b, data_range=image_a.max() - image_a.min())) / 2 + 1
+        dssim = (1 - ssim(image_a, image_b, data_range=image_a.max() - image_a.min())) / 2
 
         where_max = np.where(image == np.max(image), image, 0)
 
@@ -141,7 +141,7 @@ class Node(INode):
 
         self.output_sockets['Произведение'].set_value(product)
 
-        self.output_sockets[''].set_value([mds, sigma, dssim, one_over_pib])
+        self.output_sockets[''].set_value([product, mds, sigma, dssim])
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
