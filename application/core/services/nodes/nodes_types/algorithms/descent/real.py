@@ -42,6 +42,7 @@ class Node(INode):
 
         self.add_output_socket('Лучшее Решение', self.palette['vector1d'])
         self.add_output_socket('Лучшая Метрика', self.palette['NUM'])
+        self.add_output_socket('Этап', self.palette['NUM'])
 
         self.previous = None
 
@@ -121,6 +122,8 @@ class Node(INode):
         self.best_metric = None
         self.best_solution = None
 
+        self.stage_counter = 0
+
     def g_to_zero(self):
         self.g = 0
         self.m_hat = 0
@@ -130,6 +133,10 @@ class Node(INode):
 
         self.best_metric = None
         self.best_solution = None
+
+    def inform(self):
+        self.output_sockets['Этап'].set_value(self.stage_counter)
+        self.stage_counter += 1
 
     def update_best(self, metric_value, solution):
         if self.best_metric is None or metric_value < self.best_metric:
@@ -152,6 +159,7 @@ class Node(INode):
             u_plus[i] += self.step
 
             self.output_sockets['Решение +- Шаг'].set_value(list(u_plus))
+
             self.output_sockets['Метрика'].set_value(True)
 
             arguments = self.get_func_inputs()
@@ -179,6 +187,7 @@ class Node(INode):
         u_minus = u - steps * self.step
 
         self.output_sockets['Решение +- Шаг'].set_value(list(u_plus))
+        self.inform()
         self.output_sockets['Метрика'].set_value(True)
 
         arguments = self.get_func_inputs()
@@ -187,6 +196,7 @@ class Node(INode):
         self.update_best(m_plus, u_plus)
 
         self.output_sockets['Решение +- Шаг'].set_value(list(u_minus))
+        self.inform()
         self.output_sockets['Метрика'].set_value(True)
 
         arguments = self.get_func_inputs()
@@ -205,6 +215,7 @@ class Node(INode):
         num = len(arguments['Решение'])
 
         self.output_sockets['Решение +- Шаг'].set_value(list(u))
+        self.inform()
         self.output_sockets['Метрика'].set_value(True)
 
         arguments = self.get_func_inputs()
@@ -223,6 +234,7 @@ class Node(INode):
             vectors.append(vector)
 
             self.output_sockets['Решение +- Шаг'].set_value(list(u + self.step * vector))
+            self.inform()
             self.output_sockets['Метрика'].set_value(True)
 
             arguments = self.get_func_inputs()
@@ -261,6 +273,7 @@ class Node(INode):
         self.previous = np.asarray(arguments['Решение'])
 
         for i in range(0, int(arguments['Число Итераций'])):
+            self.stage_counter = 0
             arguments = self.get_func_inputs()
             self.output_sockets['Индекс'].set_value(i)
 

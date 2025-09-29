@@ -55,6 +55,8 @@ class Node(INode):
 
         self.optimizer = None
 
+        self.errors = 0
+
     def reborn_optimizer(self):
         arguments = self.get_func_inputs()
 
@@ -64,6 +66,7 @@ class Node(INode):
         acq = self.combobox_acq.get()
         self.optimizer = Optimizer(space, base_estimator=estimator, acq_func=acq, n_initial_points=5)
         self.label_errors.configure(text=f'Отброшенных значений: 0')
+        self.errors = 0
 
     def teach(self):
         try:
@@ -71,7 +74,8 @@ class Node(INode):
             arguments = self.get_func_inputs()
             self.optimizer.tell(arguments['Решение'], arguments['Метрика'])
         except ValueError:
-            pass
+            self.errors += 1
+            self.label_errors.configure(text=f'Отброшенных значений: {self.errors}')
 
     def ask(self):
         x = self.optimizer.ask()

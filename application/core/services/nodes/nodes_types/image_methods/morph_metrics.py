@@ -18,12 +18,13 @@ class Node(INode):
 
         self.add_enter_socket('Изображение', self.palette['CAMERA_SHOT'])
 
-        self.metrics = ['MDS', 'Сигма', 'DDSIM + 1', 'PIB']
+        self.metrics = ['MDS', 'Сигма', 'DDSIM + 1', 'PIB', 'Shift']
 
         self.add_output_socket('MDS', self.palette['NUM'], )
         self.add_output_socket('Сигма', self.palette['NUM'], )
         self.add_output_socket('DDSIM + 1', self.palette['NUM'], )
         self.add_output_socket('PIB', self.palette['NUM'], )
+        self.add_output_socket('Shift', self.palette['NUM'], )
 
         self.add_output_socket('Произведение', self.palette['NUM'])
 
@@ -32,8 +33,8 @@ class Node(INode):
         self.load_data = kwargs
         self.strong_control = False
 
-        self.widget_width = 300
-        self.widget_height = 250
+        self.widget_width = 400
+        self.widget_height = 400
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
         self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
                                                               anchor=ctk.NW, width=self.widget_width,
@@ -109,10 +110,18 @@ class Node(INode):
 
         dssim = (1 - ssim(image_a, image_b, data_range=image_a.max() - image_a.min())) / 2 + 1
 
+        where_max = np.where(image == np.max(image), image, 0)
+
+        x_max = np.sum(x * where_max) / np.sum(where_max)
+        y_max = np.sum(y * where_max) / np.sum(where_max)
+
+        shift = 1 + np.sqrt((x_c - x_max) ** 2 + (y_c - y_max) ** 2)
+
         self.calculated_metrics['MDS'] = mds
         self.calculated_metrics['Сигма'] = sigma
         self.calculated_metrics['DDSIM + 1'] = dssim
         self.calculated_metrics['PIB'] = one_over_pib
+        self.calculated_metrics['Shift'] = shift
 
         self.output_sockets['MDS'].set_value(mds)
         self.labels['MDS'].configure(text=str(mds))
@@ -122,6 +131,8 @@ class Node(INode):
         self.labels['DDSIM + 1'].configure(text=str(dssim))
         self.output_sockets['PIB'].set_value(one_over_pib)
         self.labels['PIB'].configure(text=str(one_over_pib))
+        self.output_sockets['Shift'].set_value(shift)
+        self.labels['Shift'].configure(text=str(shift))
 
         product = 1
         for metric in self.metrics:

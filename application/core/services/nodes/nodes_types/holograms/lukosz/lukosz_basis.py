@@ -53,9 +53,14 @@ class Node(INode):
             slm_width = self.event_bus.get_field('slm width')
             slm_height = self.event_bus.get_field('slm height')
 
-            radius_y = 1
 
-            radius_x = radius_y / slm_height * slm_width
+            #radius_y = 1
+
+            #radius_x = radius_y / slm_height * slm_width
+
+            radius_x = 1
+
+            radius_y = radius_x / slm_width * slm_height
 
             _x = np.linspace(-radius_x, radius_x, slm_width)
             _y = np.linspace(-radius_y, radius_y, slm_height)
