@@ -217,7 +217,7 @@ class Node(INode):
         u = np.asarray(arguments['Решение'].copy())
         num = len(arguments['Решение'])
 
-        steps = np.random.choice([-1, 1], size=num)
+        steps = self.calc_steps()
 
         u_plus = u + steps * self.step
         u_minus = u - steps * self.step
@@ -265,7 +265,7 @@ class Node(INode):
         m_values = []
 
         for i in range(int(k)):
-            vector = np.random.choice([-1, 1], size=num)
+            vector = self.calc_steps()
 
             vectors.append(vector)
 
