@@ -119,6 +119,19 @@ class Node(INode):
 
         ctk.CTkButton(frame_widgets, text="Обнулить", command=self.g_to_zero).grid(row=6, column=1, padx=5, pady=5)
 
+        ctk.CTkLabel(frame_widgets, text='Метод Шагов').grid(row=7, column=0, padx=5, pady=5)
+
+        random_methods = ['Bernoulli', 'Uniform', 'Coordinate']
+
+        self.combo_random_grad = ctk.CTkComboBox(frame_widgets, values=random_methods)
+        self.combo_random_grad.set('Uniform')
+        self.combo_random_grad.grid(row=7, column=1, padx=5, pady=5)
+
+
+        self.check_step_normalize = ctk.StringVar(value="off")
+        self.checkbox_step_normalize = ctk.CTkCheckBox(frame_widgets, text="Нормализация Шага",)
+        self.checkbox_step_normalize.grid(row=8, column=1, padx=5, pady=5)
+
         self.best_metric = None
         self.best_solution = None
 
@@ -174,6 +187,29 @@ class Node(INode):
             gradient[i] = (m_plus - m_minus) / (2 * self.step)
 
         return gradient
+
+    def calc_steps(self):
+        arguments = self.get_func_inputs()
+        num = len(arguments['Решение'])
+        steps = np.zeros(num)
+
+        if self.combo_random_grad.get() == 'Bernoulli':
+            steps = np.random.choice([-1, -1], size=num)
+
+        elif self.combo_random_grad.get() == 'Uniform':
+            steps = np.random.uniform(-1, 1, size=num)
+
+        elif self.combo_random_grad.get() == 'Coordinate':
+            steps[np.random.randint(num)] = np.random.choice([-1, 1])
+
+        if self.check_step_normalize.get() == 'on':
+            steps = steps / np.linalg.norm(steps)
+
+        return steps
+
+
+
+
 
     def random_gradient(self):
         arguments = self.get_func_inputs()
@@ -247,7 +283,7 @@ class Node(INode):
         gradient = np.zeros_like(u)
 
         for j in range(int(k)):
-            gradient = gradient + (m_values[j] - m_zero) * vectors[j] / k / self.step
+            gradient = gradient + (m_values[j] - m_zero) * vectors[j] / k / self.step * num
 
         return gradient
 
