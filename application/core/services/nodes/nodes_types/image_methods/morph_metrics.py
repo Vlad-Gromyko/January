@@ -8,7 +8,7 @@ from PIL import Image
 from skimage.metrics import structural_similarity as ssim
 
 import numpy as np
-
+import cv2
 
 class Node(INode):
     def __init__(self, special_id, config, editor, canvas, x, y, control, text, theme, **kwargs):
@@ -18,11 +18,12 @@ class Node(INode):
 
         self.add_enter_socket('Изображение', self.palette['CAMERA_SHOT'])
 
-        self.metrics = ['MDS', 'Сигма', 'DDSIM + 1', 'PIB', 'Shift']
+        self.metrics = ['MDS', 'Сигма', 'DDSIM + 1','Компактность', 'PIB', 'Shift']
 
         self.add_output_socket('MDS', self.palette['NUM'], )
         self.add_output_socket('Сигма', self.palette['NUM'], )
         self.add_output_socket('DDSIM + 1', self.palette['NUM'], )
+        self.add_output_socket('Компактность', self.palette['NUM'], )
         self.add_output_socket('PIB', self.palette['NUM'], )
         self.add_output_socket('Shift', self.palette['NUM'], )
 
@@ -34,7 +35,7 @@ class Node(INode):
         self.strong_control = False
 
         self.widget_width = 400
-        self.widget_height = 400
+        self.widget_height = 600
         frame_widgets = ctk.CTkFrame(self.canvas, width=self.widget_width, height=self.widget_height)
         self.frame_IDs['widgets'] = self.canvas.create_window(self.x, self.y, window=frame_widgets,
                                                               anchor=ctk.NW, width=self.widget_width,
@@ -56,13 +57,25 @@ class Node(INode):
 
         for counter, metric in enumerate(self.metrics):
             self.check_vars[metric] = ctk.StringVar(value="on")
+
+
             box = ctk.CTkCheckBox(frame_widgets, text=metric, variable=self.check_vars[metric], onvalue="on",
                                   offvalue="off")
+            if metric == 'PIB' or metric == 'Shift':
+                box.deselect()
             box.grid(row=2 + counter, column=0, padx=5, pady=5, sticky=ctk.W)
 
             label = ctk.CTkLabel(frame_widgets, text='0')
             label.grid(row=2 + counter, column=1, padx=5, pady=5, sticky=ctk.W)
             self.labels[metric] = label
+
+        self.check_elitism = ctk.StringVar(value="on")
+        self.checkbox_elitism = ctk.CTkCheckBox(frame_widgets, text='Элитизм', variable=self.check_elitism, onvalue="on",
+                                                offvalue="off")
+        self.checkbox_elitism.grid(row=2 + len(self.metrics), column=0, padx=5, pady=5, sticky=ctk.W)
+
+
+
 
     def execute(self):
         arguments = self.get_func_inputs()
@@ -82,6 +95,11 @@ class Node(INode):
             y_c = np.sum(y * image) / np.sum(image)
         else:
             x_c, y_c = 0, 0
+
+        if self.check_elitism.get() == 'on':
+            elite = np.where(image == np.max(image), image, 0)
+            x_c = np.sum(x * elite) / np.sum(elite)
+            y_c = np.sum(y * elite) / np.sum(elite)
 
         signal_intensity = np.sum(image * ((x - x_c) ** 2 + (y - y_c) ** 2))
         summ_intensity = np.sum(image)
@@ -117,9 +135,26 @@ class Node(INode):
 
         shift = 1 + np.sqrt((x_c - x_max) ** 2 + (y_c - y_max) ** 2)
 
+        uint_img = np.array(image*255).astype('uint8')
+
+
+
+        _, binary = cv2.threshold(uint_img, 0, 255, cv2.THRESH_BINARY)
+
+        contours, _ = cv2.findContours(uint_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        all_points = np.vstack([contour for contour in contours])
+        hull = cv2.convexHull(all_points)
+
+        area = cv2.contourArea(hull)
+        perimeter = cv2.arcLength(hull, True)
+
+        compactness = (perimeter ** 2) / area
+
         self.calculated_metrics['MDS'] = mds
         self.calculated_metrics['Сигма'] = sigma
         self.calculated_metrics['DDSIM + 1'] = dssim
+        self.calculated_metrics['Компактность'] = compactness
         self.calculated_metrics['PIB'] = one_over_pib
         self.calculated_metrics['Shift'] = shift
 
@@ -129,6 +164,8 @@ class Node(INode):
         self.labels['Сигма'].configure(text=str(sigma))
         self.output_sockets['DDSIM + 1'].set_value(dssim)
         self.labels['DDSIM + 1'].configure(text=str(dssim))
+        self.output_sockets['Компактность'].set_value(compactness)
+        self.labels['Компактность'].configure(text=str(compactness))
         self.output_sockets['PIB'].set_value(one_over_pib)
         self.labels['PIB'].configure(text=str(one_over_pib))
         self.output_sockets['Shift'].set_value(shift)

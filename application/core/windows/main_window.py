@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import customtkinter as ctk
 from application.core.events import Service, Event
 
@@ -26,6 +27,14 @@ class MainWindow(Service, ctk.CTk):
         self.events_reactions['Load'] = lambda event: self.title(f'Hyperion  {event.get_value().split('/')[-1]}')
 
         self.grid_columnconfigure((0), weight=1)
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def on_closing(self):
+        plt.close('all')
+        self.quit()   # Останавливаем mainloop
+        self.destroy()
+
 
     def drop(self, event):
         self.event_bus.raise_event(Event('Drop Start'))

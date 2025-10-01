@@ -42,7 +42,7 @@ class Node(INode):
     def draw(self):
 
         self.ax.cla()
-        names = ['Метрика', 'MDS', 'Sigma', 'DSSIM']
+        names = ['Метрика', 'MDS', 'Sigma', 'DSSIM', 'Компактность']
 
         transposed_data = list(zip(*self.metrics))
 

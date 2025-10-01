@@ -88,6 +88,11 @@ class Node(INode):
             x_coord = int(np.sum(value * x) / np.sum(value))
             y_coord = int(np.sum(value * y) / np.sum(value))
 
+            elite = np.where(value == np.max(value), value, 0)
+
+            x_elite = int(np.sum(elite * x) / np.sum(elite))
+            y_elite = int(np.sum(elite * y) / np.sum(elite))
+
 
 
             self.ax.axhline(y=center_y, color='blue', linestyle='--', linewidth=1)
@@ -95,6 +100,10 @@ class Node(INode):
 
             self.ax.axhline(y=y_coord, color='green', linestyle='--', linewidth=1)
             self.ax.axvline(x=x_coord, color='green', linestyle='--', linewidth=1)
+
+            self.ax.axhline(y=y_elite, color='pink', linestyle='--', linewidth=1)
+            self.ax.axvline(x=x_elite, color='pink', linestyle='--', linewidth=1)
+
 
             self.plot_canvas.draw()
             self.plot_canvas.flush_events()
