@@ -127,9 +127,8 @@ class Node(INode):
         self.combo_random_grad.set('Uniform')
         self.combo_random_grad.grid(row=7, column=1, padx=5, pady=5)
 
-
         self.check_step_normalize = ctk.StringVar(value="off")
-        self.checkbox_step_normalize = ctk.CTkCheckBox(frame_widgets, text="Нормализация Шага",)
+        self.checkbox_step_normalize = ctk.CTkCheckBox(frame_widgets, text="Нормализация Шага", )
         self.checkbox_step_normalize.grid(row=8, column=1, padx=5, pady=5)
 
         self.best_metric = None
@@ -206,10 +205,6 @@ class Node(INode):
             steps = steps / np.linalg.norm(steps)
 
         return steps
-
-
-
-
 
     def random_gradient(self):
         arguments = self.get_func_inputs()
@@ -345,7 +340,7 @@ class Node(INode):
                 self.m_hat = self.m / (1 - self.beta_1 ** (i + 1))
                 self.v_hat = self.v / (1 - self.beta_2 ** (i + 1))
 
-                prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
+                prognosis = self.velocity * self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
 
             elif self.combo.get() == 'AdamW':
                 if i == 0:
@@ -360,7 +355,7 @@ class Node(INode):
 
                 prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
 
-                prognosis = prognosis + self._lambda * self.previous
+                prognosis = self.velocity * (prognosis + self._lambda * self.previous)
 
             elif self.combo.get() == 'AdamL2':
                 if i == 0:
@@ -373,7 +368,7 @@ class Node(INode):
                 self.m_hat = self.m / (1 - self.beta_1 ** (i + 1))
                 self.v_hat = self.v / (1 - self.beta_2 ** (i + 1))
 
-                prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
+                prognosis = self.velocity * self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
 
             elif self.combo.get() == 'AdamWL2':
                 if i == 0:
@@ -387,7 +382,7 @@ class Node(INode):
                 self.v_hat = self.v / (1 - self.beta_2 ** (i + 1))
 
                 prognosis = self.m_hat / (np.sqrt(self.v_hat) + self.epsilon)
-                prognosis = prognosis + self._lambda * self.previous
+                prognosis = self.velocity * (prognosis + self._lambda * self.previous)
 
 
             else:
