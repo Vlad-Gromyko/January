@@ -18,7 +18,7 @@ class Node(INode):
 
         self.add_enter_socket('Изображение', self.palette['CAMERA_SHOT'])
 
-        self.metrics = ['MDS', 'Сигма', 'DDSIM + 1','Компактность', 'PIB', 'Shift']
+        self.metrics = ['MDS', 'Сигма', 'DDSIM + 1','Компактность']
 
         self.add_output_socket('MDS', self.palette['NUM'], )
         self.add_output_socket('Сигма', self.palette['NUM'], )
@@ -28,6 +28,7 @@ class Node(INode):
         self.add_output_socket('Shift', self.palette['NUM'], )
 
         self.add_output_socket('Произведение', self.palette['NUM'])
+        self.add_output_socket('Логарифм', self.palette['NUM'])
 
         self.add_output_socket('', self.palette['vector1d'], )
 
@@ -149,14 +150,13 @@ class Node(INode):
         area = cv2.contourArea(hull)
         perimeter = cv2.arcLength(hull, True)
 
-        compactness = (perimeter ** 2) / area
+        compactness = (perimeter ** 2) / area / 4 / np.pi
 
         self.calculated_metrics['MDS'] = mds
         self.calculated_metrics['Сигма'] = sigma
         self.calculated_metrics['DDSIM + 1'] = dssim
         self.calculated_metrics['Компактность'] = compactness
-        self.calculated_metrics['PIB'] = one_over_pib
-        self.calculated_metrics['Shift'] = shift
+
 
         self.output_sockets['MDS'].set_value(mds)
         self.labels['MDS'].configure(text=str(mds))
@@ -166,10 +166,7 @@ class Node(INode):
         self.labels['DDSIM + 1'].configure(text=str(dssim))
         self.output_sockets['Компактность'].set_value(compactness)
         self.labels['Компактность'].configure(text=str(compactness))
-        self.output_sockets['PIB'].set_value(one_over_pib)
-        self.labels['PIB'].configure(text=str(one_over_pib))
-        self.output_sockets['Shift'].set_value(shift)
-        self.labels['Shift'].configure(text=str(shift))
+
 
         product = 1
         for metric in self.metrics:
@@ -177,8 +174,9 @@ class Node(INode):
                 product *= self.calculated_metrics[metric]
 
         self.output_sockets['Произведение'].set_value(product)
+        self.output_sockets['Логарифм'].set_value(np.log(product))
 
-        self.output_sockets[''].set_value([product, mds, sigma, dssim])
+        self.output_sockets[''].set_value([mds, sigma, dssim, compactness])
 
         if 'go' in self.output_sockets.keys():
             self.output_sockets['go'].set_value(True)
